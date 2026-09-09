@@ -1,0 +1,101 @@
+{
+  "entities": {
+    "Garment": {
+      "title": "Garment",
+      "description": "Una prenda de vestir en el armario del usuario",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único de la prenda",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID del usuario propietario de la prenda",
+          "maxLength": 128
+        },
+        "type": {
+          "type": "string",
+          "description": "Tipo o categoría de prenda (Camisa, Pantalón, etc.)",
+          "maxLength": 60
+        },
+        "color": {
+          "type": "string",
+          "description": "Nombre del color de la prenda",
+          "maxLength": 60
+        },
+        "colorHex": {
+          "type": "string",
+          "description": "Código hexadecimal del color",
+          "maxLength": 24
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL o imagen de la prenda",
+          "maxLength": 500000
+        },
+        "iconKey": {
+          "type": "string",
+          "description": "Clave del ícono que representa a la prenda",
+          "enum": ["shirt", "pants", "jacket", "dress", "shoes", "accessory", "hanger"]
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Marca de tiempo de creación en milisegundos"
+        }
+      },
+      "required": ["id", "userId", "type", "color", "iconKey", "createdAt"]
+    },
+    "Outfit": {
+      "title": "Outfit",
+      "description": "Conjunto de prendas combinadas en un outfit",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identificador único del outfit",
+          "maxLength": 128
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID del usuario propietario del outfit",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Nombre descriptivo del outfit",
+          "maxLength": 120
+        },
+        "garmentIds": {
+          "type": "array",
+          "description": "Lista de IDs de las prendas que componen el outfit"
+        },
+        "garments": {
+          "type": "array",
+          "description": "Lista de objetos de prenda para visualización rápida"
+        },
+        "occasion": {
+          "type": "string",
+          "description": "Ocasión o estilo del outfit (Casual, Formal, etc.)",
+          "maxLength": 60
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Marca de tiempo de creación en milisegundos"
+        }
+      },
+      "required": ["id", "userId", "name", "garmentIds", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/garments/{garmentId}": {
+      "schema": "Garment",
+      "description": "Colección de prendas pertenecientes al usuario"
+    },
+    "/users/{userId}/outfits/{outfitId}": {
+      "schema": "Outfit",
+      "description": "Colección de outfits combinados pertenecientes al usuario"
+    }
+  }
+}

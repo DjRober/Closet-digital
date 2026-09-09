@@ -7,13 +7,21 @@ import { OutfitCreatorScreen } from './components/OutfitCreatorScreen';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
-import { Sparkles, Check } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import {
+  subscribeToGarments,
+  subscribeToOutfits,
+  saveGarmentToFirestore,
+  deleteGarmentFromFirestore,
+  saveOutfitToFirestore,
+  deleteOutfitFromFirestore,
+} from './lib/firestoreService';
+import { Sparkles, Check, Cloud, CloudOff, LogIn, AlertCircle, X } from 'lucide-react';
 
 const STORAGE_KEY = 'armario_digital_prendas';
 const OUTFITS_STORAGE_KEY = 'armario_digital_outfits';
 const THEME_KEY = 'armario_digital_tema';
 
-// Initial sample outfit combining two pieces
 const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
   {
     id: 'outfit-sample-1',
@@ -26,6 +34,8 @@ const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
 ];
 
 export default function App() {
+  const { user, loading: authLoading, signInWithGoogle, logout, authError, clearAuthError } = useAuth();
+
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const savedTheme = localStorage.getItem(THEME_KEY);
@@ -48,7 +58,7 @@ export default function App() {
         }
       }
     } catch {
-      // Fall through to initial presets
+      // Fall through
     }
     return INITIAL_GARMENTS;
   });
@@ -68,7 +78,7 @@ export default function App() {
     return INITIAL_SAMPLE_OUTFITS;
   });
 
-  // Navigation & Screen states
+  const [isSyncing, setIsSyncing] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'wardrobe' | 'outfit-creator'>('wardrobe');
   const [activeTab, setActiveTab] = useState<'armario' | 'outfits'>('armario');
 
@@ -104,7 +114,7 @@ export default function App() {
     }
   }, [theme]);
 
-  // Save garments to localStorage
+  // Save garments to localStorage as local cache
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(garments));
@@ -113,7 +123,7 @@ export default function App() {
     }
   }, [garments]);
 
-  // Save outfits to localStorage
+  // Save outfits to localStorage as local cache
   useEffect(() => {
     try {
       localStorage.setItem(OUTFITS_STORAGE_KEY, JSON.stringify(outfits));
@@ -131,26 +141,114 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
-  const handleAddGarment = (newGarment: Garment) => {
+  // Real-time Firestore synchronization when user is authenticated
+  useEffect(() => {
+    if (!user) return;
+
+    setIsSyncing(true);
+
+    // Subscribe to user garments
+    const unsubscribeGarments = subscribeToGarments(
+      user.uid,
+      (remoteGarments) => {
+        setIsSyncing(false);
+        if (remoteGarments.length > 0) {
+          setGarments(remoteGarments);
+        } else {
+          // If remote is empty, seed with current local garments so user doesn't lose anything
+          garments.forEach((garment) => {
+            saveGarmentToFirestore(user.uid, garment).catch((err) =>
+              console.error('Error seeding garment to Firestore:', err)
+            );
+          });
+        }
+      },
+      (err) => {
+        setIsSyncing(false);
+        console.error('Error in garments Firestore subscription:', err);
+      }
+    );
+
+    // Subscribe to user outfits
+    const unsubscribeOutfits = subscribeToOutfits(
+      user.uid,
+      (remoteOutfits) => {
+        if (remoteOutfits.length > 0) {
+          setOutfits(remoteOutfits);
+        } else {
+          // If remote is empty, seed with current local outfits
+          outfits.forEach((outfit) => {
+            saveOutfitToFirestore(user.uid, outfit).catch((err) =>
+              console.error('Error seeding outfit to Firestore:', err)
+            );
+          });
+        }
+      },
+      (err) => {
+        console.error('Error in outfits Firestore subscription:', err);
+      }
+    );
+
+    return () => {
+      unsubscribeGarments();
+      unsubscribeOutfits();
+    };
+  }, [user]);
+
+  const handleAddGarment = async (newGarment: Garment) => {
     setGarments((prev) => [newGarment, ...prev]);
-    showToast(`Prenda "${newGarment.type}" agregada al armario`);
+
+    if (user) {
+      try {
+        setIsSyncing(true);
+        await saveGarmentToFirestore(user.uid, newGarment);
+        setIsSyncing(false);
+        showToast(`Prenda guardada en Firestore`);
+      } catch (error) {
+        setIsSyncing(false);
+        console.error('Error saving garment to Firestore:', error);
+        showToast(`Prenda guardada localmente (error en sincronización)`);
+      }
+    } else {
+      showToast(`Prenda "${newGarment.type}" agregada al armario`);
+    }
   };
 
-  const handleUpdateGarment = (updatedGarment: Garment) => {
+  const handleUpdateGarment = async (updatedGarment: Garment) => {
     setGarments((prev) =>
       prev.map((g) => (g.id === updatedGarment.id ? updatedGarment : g))
     );
+
     // Also update any outfits containing this garment
-    setOutfits((prev) =>
-      prev.map((outfit) => ({
-        ...outfit,
-        garments: outfit.garments.map((g) =>
-          g.id === updatedGarment.id ? updatedGarment : g
-        ),
-      }))
-    );
+    const updatedOutfits = outfits.map((outfit) => ({
+      ...outfit,
+      garments: outfit.garments.map((g) =>
+        g.id === updatedGarment.id ? updatedGarment : g
+      ),
+    }));
+    setOutfits(updatedOutfits);
     setEditingGarment(null);
-    showToast(`Prenda "${updatedGarment.type}" actualizada`);
+
+    if (user) {
+      try {
+        setIsSyncing(true);
+        await saveGarmentToFirestore(user.uid, updatedGarment);
+        // Also update the affected outfits in Firestore
+        for (const o of updatedOutfits) {
+          if (o.garmentIds.includes(updatedGarment.id)) {
+            await saveOutfitToFirestore(user.uid, o);
+          }
+        }
+        setIsSyncing(false);
+        showToast(`Prenda actualizada en Firestore`);
+      } catch (error) {
+        setIsSyncing(false);
+        console.error('Error updating garment in Firestore:', error);
+        showToast(`Prenda actualizada`);
+      }
+    } else {
+      showToast(`Prenda "${updatedGarment.type}" actualizada`);
+    }
   };
 
   const handleSelectGarment = (garment: Garment) => {
@@ -172,24 +270,43 @@ export default function App() {
     setGarmentToDelete(garment);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!garmentToDelete) return;
     const deletedId = garmentToDelete.id;
+
     setGarments((prev) => prev.filter((g) => g.id !== deletedId));
     setSelectedGarmentIds((prev) => prev.filter((id) => id !== deletedId));
     if (editingGarment?.id === deletedId) {
       setEditingGarment(null);
     }
-    // Remove garment from any outfits
-    setOutfits((prev) =>
-      prev.map((o) => ({
-        ...o,
-        garmentIds: o.garmentIds.filter((id) => id !== deletedId),
-        garments: o.garments.filter((g) => g.id !== deletedId),
-      }))
-    );
+
+    // Remove garment from outfits
+    const updatedOutfits = outfits.map((o) => ({
+      ...o,
+      garmentIds: o.garmentIds.filter((id) => id !== deletedId),
+      garments: o.garments.filter((g) => g.id !== deletedId),
+    }));
+    setOutfits(updatedOutfits);
     setGarmentToDelete(null);
-    showToast(`Prenda eliminada del armario`);
+
+    if (user) {
+      try {
+        setIsSyncing(true);
+        await deleteGarmentFromFirestore(user.uid, deletedId);
+        // Update outfits in Firestore
+        for (const o of updatedOutfits) {
+          await saveOutfitToFirestore(user.uid, o);
+        }
+        setIsSyncing(false);
+        showToast(`Prenda eliminada de Firestore`);
+      } catch (error) {
+        setIsSyncing(false);
+        console.error('Error deleting from Firestore:', error);
+        showToast(`Prenda eliminada del armario`);
+      }
+    } else {
+      showToast(`Prenda eliminada del armario`);
+    }
   };
 
   const handleCancelDelete = () => {
@@ -230,11 +347,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSaveOutfit = (outfitData: Omit<Outfit, 'id' | 'createdAt'>) => {
+  const handleSaveOutfit = async (outfitData: Omit<Outfit, 'id' | 'createdAt'>) => {
     const newOutfit: Outfit = {
       ...outfitData,
       id: `outfit-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       createdAt: Date.now(),
+      userId: user?.uid,
     };
 
     setOutfits((prev) => [newOutfit, ...prev]);
@@ -243,9 +361,21 @@ export default function App() {
     setCurrentScreen('wardrobe');
     setActiveTab('outfits');
 
-    showToast(`¡Outfit "${newOutfit.name}" guardado con éxito!`);
+    if (user) {
+      try {
+        setIsSyncing(true);
+        await saveOutfitToFirestore(user.uid, newOutfit);
+        setIsSyncing(false);
+        showToast(`Outfit guardado en Firestore`);
+      } catch (error) {
+        setIsSyncing(false);
+        console.error('Error saving outfit to Firestore:', error);
+        showToast(`Outfit "${newOutfit.name}" guardado localmente`);
+      }
+    } else {
+      showToast(`¡Outfit "${newOutfit.name}" guardado con éxito!`);
+    }
 
-    // Smoothly scroll down to the "Mis outfits" section
     setTimeout(() => {
       if (outfitsSectionRef.current) {
         outfitsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -253,9 +383,23 @@ export default function App() {
     }, 150);
   };
 
-  const handleDeleteOutfit = (outfitId: string) => {
+  const handleDeleteOutfit = async (outfitId: string) => {
     setOutfits((prev) => prev.filter((o) => o.id !== outfitId));
-    showToast('Outfit eliminado');
+
+    if (user) {
+      try {
+        setIsSyncing(true);
+        await deleteOutfitFromFirestore(user.uid, outfitId);
+        setIsSyncing(false);
+        showToast('Outfit eliminado de Firestore');
+      } catch (error) {
+        setIsSyncing(false);
+        console.error('Error deleting outfit from Firestore:', error);
+        showToast('Outfit eliminado');
+      }
+    } else {
+      showToast('Outfit eliminado');
+    }
   };
 
   const handleRemoveGarmentFromOutfitScreen = (garmentId: string) => {
@@ -272,7 +416,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col transition-colors duration-200">
-      {/* Header */}
+      {/* Header with Navigation and User Auth */}
       <Header
         garmentCount={garments.length}
         outfitCount={outfits.length}
@@ -288,7 +432,62 @@ export default function App() {
         }}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        user={user}
+        onSignIn={signInWithGoogle}
+        onSignOut={logout}
+        isSyncing={isSyncing}
       />
+
+      {/* Auth Error Banner if any */}
+      {authError && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+              <span>{authError}</span>
+            </div>
+            <button
+              onClick={clearAuthError}
+              className="p-1 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Firebase Cloud Sync Banner for Guests */}
+      {!user && !authLoading && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
+          <div
+            id="banner-firebase-info"
+            className="p-3.5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
+                <Cloud className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-stone-900 dark:text-stone-100">
+                  Firebase Firestore activado
+                </p>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Inicia sesión con tu cuenta de Google para respaldar y sincronizar tus prendas en la nube.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              id="btn-banner-login-google"
+              onClick={signInWithGoogle}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-semibold shadow-xs transition-all cursor-pointer shrink-0"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Conectar con Google</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Floating Toast Notification */}
       {toastMessage && (
@@ -368,7 +567,13 @@ export default function App() {
 
       {/* Minimal Footer */}
       <footer className="border-t border-stone-200/60 dark:border-stone-800/80 py-6 text-center text-xs text-stone-400 dark:text-stone-500">
-        <p>Armario Digital — Registro de prendas y combinador de outfits</p>
+        <div className="flex items-center justify-center gap-1.5 mb-1">
+          <Cloud className="w-3.5 h-3.5 text-amber-500" />
+          <span className="font-medium text-stone-600 dark:text-stone-400">Armario Digital</span>
+          <span>•</span>
+          <span>Firebase Firestore</span>
+        </div>
+        <p>Registro de prendas y organizador de outfits con respaldo en la nube</p>
       </footer>
     </div>
   );

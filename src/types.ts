@@ -2,6 +2,7 @@ export type GarmentIconKey = 'shirt' | 'pants' | 'jacket' | 'dress' | 'shoes' | 
 
 export interface Garment {
   id: string;
+  userId?: string;
   type: string;
   color: string;
   colorHex?: string;
@@ -23,10 +24,12 @@ export interface ColorPreset {
 
 export interface Outfit {
   id: string;
+  userId?: string;
   name: string;
   garmentIds: string[];
   garments: Garment[];
   createdAt: number;
   occasion?: string;
 }
+
 

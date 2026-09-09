@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidGarment(data, userId) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId == userId &&
+        data.type is string && data.type.size() > 0 && data.type.size() <= 60 &&
+        data.color is string && data.color.size() > 0 && data.color.size() <= 60 &&
+        (!('colorHex' in data) || (data.colorHex is string && data.colorHex.size() <= 24)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500000)) &&
+        data.iconKey is string && data.iconKey in ['shirt', 'pants', 'jacket', 'dress', 'shoes', 'accessory', 'hanger'] &&
+        data.createdAt is number;
+    }
+
+    function isValidOutfit(data, userId) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.userId == userId &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        data.garmentIds is list && data.garmentIds.size() <= 30 &&
+        data.garments is list && data.garments.size() <= 30 &&
+        (!('occasion' in data) || (data.occasion is string && data.occasion.size() <= 60)) &&
+        data.createdAt is number;
+    }
+
+    // User Garments Collection
+    match /users/{userId}/garments/{garmentId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(garmentId) && isValidGarment(request.resource.data, userId);
+      allow update: if isOwner(userId) && isValidId(garmentId) && isValidGarment(request.resource.data, userId);
+      allow delete: if isOwner(userId) && isValidId(garmentId);
+    }
+
+    // User Outfits Collection
+    match /users/{userId}/outfits/{outfitId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(outfitId) && isValidOutfit(request.resource.data, userId);
+      allow update: if isOwner(userId) && isValidId(outfitId) && isValidOutfit(request.resource.data, userId);
+      allow delete: if isOwner(userId) && isValidId(outfitId);
+    }
+  }
+}
