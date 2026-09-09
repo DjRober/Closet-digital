@@ -49,6 +49,8 @@ export function getFriendlyAuthErrorMessage(error: any): string {
       return 'Demasiados intentos fallidos. Por seguridad, inténtalo más tarde.';
     case 'auth/network-request-failed':
       return 'Error de conexión a internet. Revisa tu red.';
+    case 'auth/unauthorized-domain':
+      return 'El dominio actual (closet-digital-six.vercel.app) debe ser agregado a "Dominios autorizados" en Firebase Console > Authentication > Settings para habilitar el inicio de sesión con Google. Mientras tanto, puedes usar registro con correo y contraseña.';
     case 'auth/popup-closed-by-user':
       return '';
     default:
