@@ -170,13 +170,14 @@ export function Header({
           ) : (
             <button
               type="button"
-              id="btn-iniciar-sesion-google"
+              id="btn-abrir-auth-modal"
               onClick={onSignIn}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-medium shadow-xs transition-all cursor-pointer"
-              title="Sincroniza tus prendas en la nube con Google"
+              title="Inicia sesión o regístrate con correo o Google"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Iniciar sesión</span>
+              <span className="hidden sm:inline">Acceder / Registro</span>
+              <span className="sm:hidden">Acceder</span>
             </button>
           )}
 

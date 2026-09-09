@@ -5,6 +5,7 @@ import { GarmentGallery } from './components/GarmentGallery';
 import { OutfitsSection } from './components/OutfitsSection';
 import { OutfitCreatorScreen } from './components/OutfitCreatorScreen';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
+import { AuthModal } from './components/AuthModal';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 import { useAuth } from './context/AuthContext';
@@ -16,7 +17,7 @@ import {
   saveOutfitToFirestore,
   deleteOutfitFromFirestore,
 } from './lib/firestoreService';
-import { Sparkles, Check, Cloud, CloudOff, LogIn, AlertCircle, X } from 'lucide-react';
+import { Check, Cloud, LogIn, Mail, AlertCircle, X, UserPlus } from 'lucide-react';
 
 const STORAGE_KEY = 'armario_digital_prendas';
 const OUTFITS_STORAGE_KEY = 'armario_digital_outfits';
@@ -85,6 +86,10 @@ export default function App() {
   // Garment selection for outfit combination
   const [selectedGarmentIds, setSelectedGarmentIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
+
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signup');
 
   // Success toast message
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -195,6 +200,11 @@ export default function App() {
     };
   }, [user]);
 
+  const handleOpenAuthModal = (mode: 'signin' | 'signup' = 'signup') => {
+    setAuthModalInitialMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
   const handleAddGarment = async (newGarment: Garment) => {
     setGarments((prev) => [newGarment, ...prev]);
 
@@ -233,7 +243,6 @@ export default function App() {
       try {
         setIsSyncing(true);
         await saveGarmentToFirestore(user.uid, updatedGarment);
-        // Also update the affected outfits in Firestore
         for (const o of updatedOutfits) {
           if (o.garmentIds.includes(updatedGarment.id)) {
             await saveOutfitToFirestore(user.uid, o);
@@ -293,7 +302,6 @@ export default function App() {
       try {
         setIsSyncing(true);
         await deleteGarmentFromFirestore(user.uid, deletedId);
-        // Update outfits in Firestore
         for (const o of updatedOutfits) {
           await saveOutfitToFirestore(user.uid, o);
         }
@@ -433,7 +441,7 @@ export default function App() {
         theme={theme}
         onToggleTheme={handleToggleTheme}
         user={user}
-        onSignIn={signInWithGoogle}
+        onSignIn={() => handleOpenAuthModal('signin')}
         onSignOut={logout}
         isSyncing={isSyncing}
       />
@@ -456,35 +464,48 @@ export default function App() {
         </div>
       )}
 
-      {/* Firebase Cloud Sync Banner for Guests */}
+      {/* Firebase Cloud Sync Banner for Guests with Email & Password option */}
       {!user && !authLoading && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
           <div
             id="banner-firebase-info"
-            className="p-3.5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+            className="p-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
-                <Cloud className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
+                <Cloud className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-xs font-medium text-stone-900 dark:text-stone-100">
-                  Firebase Firestore activado
+                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                  Respalda tu armario en la nube con Firebase
                 </p>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400">
-                  Inicia sesión con tu cuenta de Google para respaldar y sincronizar tus prendas en la nube.
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  Regístrate gratis con tu correo electrónico o cuenta de Google para acceder a tus prendas desde cualquier dispositivo.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              id="btn-banner-login-google"
-              onClick={signInWithGoogle}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-semibold shadow-xs transition-all cursor-pointer shrink-0"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Conectar con Google</span>
-            </button>
+
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+              <button
+                type="button"
+                id="btn-banner-registro-email"
+                onClick={() => handleOpenAuthModal('signup')}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Registrarse con correo</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-banner-login-email"
+                onClick={() => handleOpenAuthModal('signin')}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-medium shadow-2xs transition-all cursor-pointer"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Iniciar sesión</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -557,6 +578,13 @@ export default function App() {
         )}
       </main>
 
+      {/* Auth Modal for Email/Password Registration & Login */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        initialMode={authModalInitialMode}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
+
       {/* Confirmation Modal for Garment Deletion */}
       <DeleteConfirmationModal
         isOpen={Boolean(garmentToDelete)}
@@ -571,7 +599,7 @@ export default function App() {
           <Cloud className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-medium text-stone-600 dark:text-stone-400">Armario Digital</span>
           <span>•</span>
-          <span>Firebase Firestore</span>
+          <span>Firebase Firestore & Auth</span>
         </div>
         <p>Registro de prendas y organizador de outfits con respaldo en la nube</p>
       </footer>
