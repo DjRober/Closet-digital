@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { GarmentForm } from './components/GarmentForm';
 import { GarmentGallery } from './components/GarmentGallery';
+import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { Garment } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 
@@ -37,6 +38,9 @@ export default function App() {
     return INITIAL_GARMENTS;
   });
 
+  // State for garment deletion confirmation
+  const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
+
   // Apply dark mode class to document element
   useEffect(() => {
     const root = document.documentElement;
@@ -69,6 +73,20 @@ export default function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
+  const handleRequestDelete = (garment: Garment) => {
+    setGarmentToDelete(garment);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!garmentToDelete) return;
+    setGarments((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
+    setGarmentToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setGarmentToDelete(null);
+  };
+
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col transition-colors duration-200">
       {/* Header */}
@@ -84,8 +102,19 @@ export default function App() {
         <GarmentForm onAddGarment={handleAddGarment} />
 
         {/* Galería de prendas registradas en el armario */}
-        <GarmentGallery garments={garments} />
+        <GarmentGallery
+          garments={garments}
+          onDeleteRequest={handleRequestDelete}
+        />
       </main>
+
+      {/* Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={Boolean(garmentToDelete)}
+        garment={garmentToDelete}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
 
       {/* Minimal Footer */}
       <footer className="border-t border-stone-200/60 dark:border-stone-800/80 py-6 text-center text-xs text-stone-400 dark:text-stone-500">

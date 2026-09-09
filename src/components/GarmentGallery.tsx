@@ -1,12 +1,14 @@
+import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
 import { Sparkles, Layers } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
+  onDeleteRequest: (garment: Garment) => void;
 }
 
-export function GarmentGallery({ garments }: GarmentGalleryProps) {
+export function GarmentGallery({ garments, onDeleteRequest }: GarmentGalleryProps) {
   return (
     <section id="armario-galeria" className="mt-10">
       <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-200/80 dark:border-stone-800">
@@ -49,9 +51,16 @@ export function GarmentGallery({ garments }: GarmentGalleryProps) {
           id="garment-grid"
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
         >
-          {garments.map((garment, index) => (
-            <GarmentCard key={garment.id} garment={garment} index={index} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {garments.map((garment, index) => (
+              <GarmentCard
+                key={garment.id}
+                garment={garment}
+                index={index}
+                onDeleteRequest={onDeleteRequest}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </section>

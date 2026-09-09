@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { Trash2 } from 'lucide-react';
 import { Garment } from '../types';
 import { GarmentVisual } from './GarmentVisual';
 
@@ -6,16 +7,19 @@ interface GarmentCardProps {
   key?: string;
   garment: Garment;
   index: number;
+  onDeleteRequest: (garment: Garment) => void;
 }
 
-export function GarmentCard({ garment, index }: GarmentCardProps) {
+export function GarmentCard({ garment, index, onDeleteRequest }: GarmentCardProps) {
   return (
     <motion.article
       id={`garment-card-${garment.id}`}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }}
-      className="group bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-xs hover:shadow-md hover:border-stone-300 dark:hover:border-stone-700 transition-all duration-200 overflow-hidden flex flex-col"
+      layout
+      initial={{ opacity: 0, scale: 0.95, y: 16 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.25) }}
+      className="group relative bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-xs hover:shadow-md hover:border-stone-300 dark:hover:border-stone-700 transition-all duration-200 overflow-hidden flex flex-col"
     >
       {/* Visual Area (Photo or Icon) */}
       <div className="relative aspect-4/3 w-full bg-stone-100/70 dark:bg-stone-950/60 overflow-hidden flex items-center justify-center p-3 border-b border-stone-100 dark:border-stone-800">
@@ -27,6 +31,21 @@ export function GarmentCard({ garment, index }: GarmentCardProps) {
           size="lg"
           className="w-full h-full rounded-xl"
         />
+
+        {/* Delete button */}
+        <button
+          type="button"
+          id={`btn-eliminar-${garment.id}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteRequest(garment);
+          }}
+          title="Eliminar prenda"
+          aria-label={`Eliminar ${garment.type}`}
+          className="absolute top-2.5 left-2.5 p-2 rounded-full bg-white/95 dark:bg-stone-800/95 backdrop-blur-xs border border-stone-200/80 dark:border-stone-700 text-stone-500 dark:text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/70 hover:border-rose-300 dark:hover:border-rose-800 shadow-xs hover:shadow hover:scale-105 active:scale-95 transition-all cursor-pointer z-10"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
 
         {/* Color badge over visual */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 dark:bg-stone-800/95 backdrop-blur-xs border border-stone-200/70 dark:border-stone-700 shadow-xs text-xs text-stone-700 dark:text-stone-200">
