@@ -1,0 +1,7 @@
+{
+  "name": "Armario Digital",
+  "description": "App para organizar tu ropa registrando prendas con foto o ícono, tipo y color.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
