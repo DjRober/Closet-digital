@@ -20,3 +20,13 @@ export interface ColorPreset {
   hex: string;
   border?: boolean;
 }
+
+export interface Outfit {
+  id: string;
+  name: string;
+  garmentIds: string[];
+  garments: Garment[];
+  createdAt: number;
+  occasion?: string;
+}
+

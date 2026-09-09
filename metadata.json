@@ -1,6 +1,6 @@
 {
   "name": "Armario Digital",
-  "description": "App para organizar tu ropa registrando, editando, eliminando y visualizando prendas con foto o ícono, tipo y color.",
+  "description": "App para organizar tu ropa registrando prendas con foto o ícono, editándolas y combinándolas en outfits personalizados.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

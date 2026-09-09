@@ -1,24 +1,39 @@
 import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
-import { Sparkles, Layers } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, X, ArrowRight } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
   editingGarmentId?: string | null;
+  selectedGarmentIds: string[];
+  isSelectionMode: boolean;
+  onToggleSelectionMode: () => void;
   onSelectGarment: (garment: Garment) => void;
+  onToggleSelectGarment: (garment: Garment) => void;
+  onClearSelection: () => void;
+  onCreateOutfitClick: () => void;
   onDeleteRequest: (garment: Garment) => void;
 }
 
 export function GarmentGallery({
   garments,
   editingGarmentId,
+  selectedGarmentIds,
+  isSelectionMode,
+  onToggleSelectionMode,
   onSelectGarment,
+  onToggleSelectGarment,
+  onClearSelection,
+  onCreateOutfitClick,
   onDeleteRequest,
 }: GarmentGalleryProps) {
+  const selectedCount = selectedGarmentIds.length;
+
   return (
-    <section id="armario-galeria" className="mt-10">
-      <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-200/80 dark:border-stone-800">
+    <section id="armario-galeria" className="mt-10 scroll-mt-20">
+      {/* Gallery Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-stone-200/80 dark:border-stone-800">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
             <Layers className="w-4 h-4" />
@@ -28,16 +43,82 @@ export function GarmentGallery({
               Prendas en el armario
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              Colección actual de prendas registradas
+              {isSelectionMode
+                ? 'Toca las prendas para seleccionarlas y combinarlas en un outfit'
+                : 'Colección actual de prendas registradas'}
             </p>
           </div>
         </div>
 
-        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-          {garments.length} {garments.length === 1 ? 'prenda' : 'prendas'}
-        </span>
+        {/* Action Controls */}
+        <div className="flex items-center gap-2">
+          {/* Garment count */}
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+            {garments.length} {garments.length === 1 ? 'prenda' : 'prendas'}
+          </span>
+
+          {/* Toggle Selection / Combinar mode button */}
+          <button
+            type="button"
+            id="btn-modo-combinar-outfit"
+            onClick={onToggleSelectionMode}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+              isSelectionMode
+                ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-xs'
+                : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700'
+            }`}
+          >
+            <CheckSquare className="w-3.5 h-3.5" />
+            <span>{isSelectionMode ? 'Modo selección activo' : 'Seleccionar para outfit'}</span>
+          </button>
+
+          {/* Primary "Crear outfit" button in header */}
+          <button
+            type="button"
+            id="btn-crear-outfit"
+            onClick={onCreateOutfitClick}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium shadow-xs hover:shadow transition-all active:scale-[0.98] cursor-pointer ${
+              selectedCount > 0
+                ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white ring-2 ring-stone-900/20 dark:ring-stone-100/20'
+                : 'bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-700'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>
+              {selectedCount > 0 ? `Crear outfit (${selectedCount})` : 'Crear outfit'}
+            </span>
+          </button>
+        </div>
       </div>
 
+      {/* Selection Mode Notice Banner */}
+      {isSelectionMode && (
+        <div
+          id="banner-modo-seleccion"
+          className="mb-5 p-3 rounded-xl bg-stone-100/80 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3 text-xs text-stone-600 dark:text-stone-300 animate-fade-in"
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span>
+              {selectedCount === 0
+                ? 'Toca dos o más prendas para combinarlas en un outfit.'
+                : `${selectedCount} ${selectedCount === 1 ? 'prenda elegida' : 'prendas elegidas'}. Toca "Crear outfit" para verlas juntas.`}
+            </span>
+          </div>
+          {selectedCount > 0 && (
+            <button
+              type="button"
+              id="btn-limpiar-seleccion-banner"
+              onClick={onClearSelection}
+              className="text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 underline text-[11px] cursor-pointer"
+            >
+              Desmarcar todas
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Grid or Empty State */}
       {garments.length === 0 ? (
         <div
           id="armario-empty-state"
@@ -65,11 +146,56 @@ export function GarmentGallery({
                 garment={garment}
                 index={index}
                 isEditing={editingGarmentId === garment.id}
+                isSelected={selectedGarmentIds.includes(garment.id)}
+                isSelectionMode={isSelectionMode}
                 onSelect={onSelectGarment}
+                onToggleSelect={onToggleSelectGarment}
                 onDeleteRequest={onDeleteRequest}
               />
             ))}
           </AnimatePresence>
+        </div>
+      )}
+
+      {/* Sticky Bottom Action Bar when items are selected */}
+      {selectedCount > 0 && (
+        <div
+          id="barra-seleccion-outfit"
+          className="fixed bottom-5 inset-x-4 max-w-xl mx-auto z-40 bg-stone-900/95 dark:bg-stone-100/95 text-white dark:text-stone-900 rounded-2xl shadow-xl border border-stone-800 dark:border-stone-200 p-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 backdrop-blur-md animate-fade-in"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-full bg-white/20 dark:bg-stone-900/20 flex items-center justify-center text-xs font-bold">
+              {selectedCount}
+            </div>
+            <div>
+              <p className="text-xs font-semibold">
+                {selectedCount === 1 ? '1 prenda seleccionada' : `${selectedCount} prendas seleccionadas`}
+              </p>
+              <p className="text-[10px] opacity-80">Listas para armar tu outfit</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="btn-cancelar-seleccion-flotante"
+              onClick={onClearSelection}
+              className="p-2 rounded-xl text-stone-400 hover:text-white dark:hover:text-stone-900 transition-colors cursor-pointer"
+              title="Cancelar selección"
+              aria-label="Cancelar selección"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              id="btn-crear-outfit-flotante"
+              onClick={onCreateOutfitClick}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-stone-900 text-stone-900 dark:text-white text-xs font-semibold hover:bg-stone-100 dark:hover:bg-stone-800 shadow-xs hover:shadow transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <span>Crear outfit</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       )}
     </section>
