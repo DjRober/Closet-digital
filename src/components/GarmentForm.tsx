@@ -1,14 +1,22 @@
-import React, { useState, useRef } from 'react';
-import { Camera, Image as ImageIcon, Check, Upload, Sparkles } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Camera, Image as ImageIcon, Check, Upload, Sparkles, Edit3, X } from 'lucide-react';
 import { Garment, GarmentIconKey } from '../types';
 import { GARMENT_TYPE_PRESETS, COLOR_PRESETS, ICON_OPTIONS } from '../data/garmentOptions';
 import { GarmentVisual } from './GarmentVisual';
 
 interface GarmentFormProps {
   onAddGarment: (garment: Garment) => void;
+  editingGarment?: Garment | null;
+  onUpdateGarment?: (garment: Garment) => void;
+  onCancelEdit?: () => void;
 }
 
-export function GarmentForm({ onAddGarment }: GarmentFormProps) {
+export function GarmentForm({
+  onAddGarment,
+  editingGarment,
+  onUpdateGarment,
+  onCancelEdit,
+}: GarmentFormProps) {
   // Mode: 'photo' or 'icon'
   const [visualMode, setVisualMode] = useState<'photo' | 'icon'>('icon');
   const [imageUrl, setImageUrl] = useState<string>('');
@@ -19,8 +27,38 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [errors, setErrors] = useState<{ type?: string; color?: string }>({});
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('¡Prenda guardada!');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Populate form fields when editingGarment is provided
+  useEffect(() => {
+    if (editingGarment) {
+      setGarmentType(editingGarment.type);
+      setColorName(editingGarment.color);
+      setColorHex(editingGarment.colorHex || '#1c1917');
+      if (editingGarment.imageUrl) {
+        setImageUrl(editingGarment.imageUrl);
+        setVisualMode('photo');
+      } else {
+        setImageUrl('');
+        setVisualMode('icon');
+        setIconKey(editingGarment.iconKey || 'shirt');
+      }
+      setErrors({});
+    }
+  }, [editingGarment]);
+
+  const handleCancel = () => {
+    setGarmentType('');
+    setColorName('');
+    setColorHex('#1c1917');
+    setImageUrl('');
+    setIconKey('shirt');
+    setVisualMode('icon');
+    setErrors({});
+    onCancelEdit?.();
+  };
 
   // Handle image file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,24 +139,47 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
       return;
     }
 
-    const newGarment: Garment = {
-      id: `garment-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      type: garmentType.trim(),
-      color: colorName.trim(),
-      colorHex: colorHex,
-      imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
-      iconKey: iconKey,
-      createdAt: Date.now(),
-    };
+    if (editingGarment) {
+      const updatedGarment: Garment = {
+        ...editingGarment,
+        type: garmentType.trim(),
+        color: colorName.trim(),
+        colorHex: colorHex,
+        imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
+        iconKey: iconKey,
+      };
 
-    onAddGarment(newGarment);
+      onUpdateGarment?.(updatedGarment);
+      setFeedbackMessage('¡Prenda actualizada con éxito!');
+      setShowSavedFeedback(true);
 
-    // Reset form fields
-    setGarmentType('');
-    setColorName('');
-    setImageUrl('');
-    setErrors({});
-    setShowSavedFeedback(true);
+      // Reset form fields
+      setGarmentType('');
+      setColorName('');
+      setImageUrl('');
+      setErrors({});
+      onCancelEdit?.();
+    } else {
+      const newGarment: Garment = {
+        id: `garment-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        type: garmentType.trim(),
+        color: colorName.trim(),
+        colorHex: colorHex,
+        imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
+        iconKey: iconKey,
+        createdAt: Date.now(),
+      };
+
+      onAddGarment(newGarment);
+      setFeedbackMessage('¡Prenda agregada al armario!');
+      setShowSavedFeedback(true);
+
+      // Reset form fields
+      setGarmentType('');
+      setColorName('');
+      setImageUrl('');
+      setErrors({});
+    }
 
     setTimeout(() => {
       setShowSavedFeedback(false);
@@ -128,27 +189,61 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
   return (
     <div
       id="registro-prenda-container"
-      className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-sm p-6 sm:p-7 transition-colors"
+      className={`bg-white dark:bg-stone-900 rounded-2xl border shadow-sm p-6 sm:p-7 transition-all ${
+        editingGarment
+          ? 'border-stone-900/40 dark:border-stone-100/40 ring-2 ring-stone-900/10 dark:ring-stone-100/10'
+          : 'border-stone-200/90 dark:border-stone-800'
+      }`}
     >
-      <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100 dark:border-stone-800">
-        <div>
-          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
-            Registrar nueva prenda
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Añade los datos de la prenda para guardarla en tu armario
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-stone-100 dark:border-stone-800">
+        <div className="flex items-center gap-3">
+          {editingGarment && (
+            <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60">
+              <Edit3 className="w-5 h-5" />
+            </div>
+          )}
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
+                {editingGarment ? 'Editar prenda' : 'Registrar nueva prenda'}
+              </h2>
+              {editingGarment && (
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                  Modo edición
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              {editingGarment
+                ? 'Modifica el tipo, color o ícono y guarda los cambios'
+                : 'Añade los datos de la prenda para guardarla en tu armario'}
+            </p>
+          </div>
         </div>
 
-        {showSavedFeedback && (
-          <div
-            id="guardado-feedback-badge"
-            className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full animate-fade-in"
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>¡Prenda agregada al armario!</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {editingGarment && (
+            <button
+              type="button"
+              id="btn-cancelar-edicion-top"
+              onClick={handleCancel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 text-xs font-medium transition-all cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Cancelar edición</span>
+            </button>
+          )}
+
+          {showSavedFeedback && (
+            <div
+              id="guardado-feedback-badge"
+              className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full animate-fade-in"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>{feedbackMessage}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -458,18 +553,41 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
               </div>
             </div>
 
-            {/* Botón de Guardar */}
+            {/* Botón de Guardar / Actualizar */}
             <div className="pt-2">
-              <button
-                type="submit"
-                id="btn-guardar-prenda"
-                className="w-full py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Check className="w-4 h-4" />
-                <span>Guardar prenda en el armario</span>
-              </button>
+              {editingGarment ? (
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    id="btn-cancelar-edicion"
+                    onClick={handleCancel}
+                    className="w-1/3 py-3 px-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-sm font-medium transition-all hover:shadow-xs active:scale-[0.99] cursor-pointer text-center"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    id="btn-guardar-prenda"
+                    className="flex-1 py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Guardar cambios</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  id="btn-guardar-prenda"
+                  className="w-full py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Guardar prenda en el armario</span>
+                </button>
+              )}
               <p className="text-[11px] text-stone-400 dark:text-stone-500 text-center mt-2">
-                La prenda se agregará inmediatamente a la galería de tu armario aquí abajo.
+                {editingGarment
+                  ? 'Los cambios se actualizarán inmediatamente en la tarjeta del armario.'
+                  : 'La prenda se agregará inmediatamente a la galería de tu armario aquí abajo.'}
               </p>
             </div>
           </div>

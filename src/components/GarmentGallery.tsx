@@ -5,10 +5,17 @@ import { Sparkles, Layers } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
+  editingGarmentId?: string | null;
+  onSelectGarment: (garment: Garment) => void;
   onDeleteRequest: (garment: Garment) => void;
 }
 
-export function GarmentGallery({ garments, onDeleteRequest }: GarmentGalleryProps) {
+export function GarmentGallery({
+  garments,
+  editingGarmentId,
+  onSelectGarment,
+  onDeleteRequest,
+}: GarmentGalleryProps) {
   return (
     <section id="armario-galeria" className="mt-10">
       <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-200/80 dark:border-stone-800">
@@ -57,6 +64,8 @@ export function GarmentGallery({ garments, onDeleteRequest }: GarmentGalleryProp
                 key={garment.id}
                 garment={garment}
                 index={index}
+                isEditing={editingGarmentId === garment.id}
+                onSelect={onSelectGarment}
                 onDeleteRequest={onDeleteRequest}
               />
             ))}

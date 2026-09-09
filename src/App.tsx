@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { GarmentForm } from './components/GarmentForm';
 import { GarmentGallery } from './components/GarmentGallery';
@@ -41,6 +41,11 @@ export default function App() {
   // State for garment deletion confirmation
   const [garmentToDelete, setGarmentToDelete] = useState<Garment | null>(null);
 
+  // State for garment being edited
+  const [editingGarment, setEditingGarment] = useState<Garment | null>(null);
+
+  const formSectionRef = useRef<HTMLDivElement>(null);
+
   // Apply dark mode class to document element
   useEffect(() => {
     const root = document.documentElement;
@@ -69,6 +74,25 @@ export default function App() {
     setGarments((prev) => [newGarment, ...prev]);
   };
 
+  const handleUpdateGarment = (updatedGarment: Garment) => {
+    setGarments((prev) =>
+      prev.map((g) => (g.id === updatedGarment.id ? updatedGarment : g))
+    );
+    setEditingGarment(null);
+  };
+
+  const handleSelectGarment = (garment: Garment) => {
+    setEditingGarment(garment);
+    // Smoothly scroll to the form so the user can easily see and edit the fields
+    if (formSectionRef.current) {
+      formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingGarment(null);
+  };
+
   const handleToggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
@@ -80,6 +104,9 @@ export default function App() {
   const handleConfirmDelete = () => {
     if (!garmentToDelete) return;
     setGarments((prev) => prev.filter((g) => g.id !== garmentToDelete.id));
+    if (editingGarment?.id === garmentToDelete.id) {
+      setEditingGarment(null);
+    }
     setGarmentToDelete(null);
   };
 
@@ -98,12 +125,21 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-10">
-        {/* Formulario de registro */}
-        <GarmentForm onAddGarment={handleAddGarment} />
+        {/* Formulario de registro y edición */}
+        <div ref={formSectionRef} className="scroll-mt-6">
+          <GarmentForm
+            onAddGarment={handleAddGarment}
+            editingGarment={editingGarment}
+            onUpdateGarment={handleUpdateGarment}
+            onCancelEdit={handleCancelEdit}
+          />
+        </div>
 
         {/* Galería de prendas registradas en el armario */}
         <GarmentGallery
           garments={garments}
+          editingGarmentId={editingGarment?.id}
+          onSelectGarment={handleSelectGarment}
           onDeleteRequest={handleRequestDelete}
         />
       </main>
@@ -118,7 +154,7 @@ export default function App() {
 
       {/* Minimal Footer */}
       <footer className="border-t border-stone-200/60 dark:border-stone-800/80 py-6 text-center text-xs text-stone-400 dark:text-stone-500">
-        <p>Armario Digital — Mockup de registro y visualización de prendas</p>
+        <p>Armario Digital — Mockup de registro, edición y visualización de prendas</p>
       </footer>
     </div>
   );
