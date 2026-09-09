@@ -128,14 +128,14 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
   return (
     <div
       id="registro-prenda-container"
-      className="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-6 sm:p-7"
+      className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-sm p-6 sm:p-7 transition-colors"
     >
-      <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100">
+      <div className="flex items-center justify-between pb-4 mb-6 border-b border-stone-100 dark:border-stone-800">
         <div>
-          <h2 className="text-lg font-semibold text-stone-900 tracking-tight">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
             Registrar nueva prenda
           </h2>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Añade los datos de la prenda para guardarla en tu armario
           </p>
         </div>
@@ -143,7 +143,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
         {showSavedFeedback && (
           <div
             id="guardado-feedback-badge"
-            className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-full animate-fade-in"
+            className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full animate-fade-in"
           >
             <Check className="w-3.5 h-3.5" />
             <span>¡Prenda agregada al armario!</span>
@@ -156,20 +156,20 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
           {/* Espacio para foto o ícono de prenda */}
           <div className="md:col-span-5 flex flex-col space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
                 Foto o ícono de prenda
               </label>
 
               {/* Selector entre modo Foto e Ícono */}
-              <div className="inline-flex p-0.5 rounded-lg bg-stone-100 border border-stone-200 text-xs">
+              <div className="inline-flex p-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs">
                 <button
                   type="button"
                   id="tab-modo-icono"
                   onClick={() => setVisualMode('icon')}
                   className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 ${
                     visualMode === 'icon'
-                      ? 'bg-white text-stone-900 shadow-2xs'
-                      : 'text-stone-500 hover:text-stone-800'
+                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-2xs'
+                      : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                   }`}
                 >
                   <Sparkles className="w-3 h-3" />
@@ -181,8 +181,8 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                   onClick={() => setVisualMode('photo')}
                   className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 ${
                     visualMode === 'photo'
-                      ? 'bg-white text-stone-900 shadow-2xs'
-                      : 'text-stone-500 hover:text-stone-800'
+                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-2xs'
+                      : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                   }`}
                 >
                   <Camera className="w-3 h-3" />
@@ -199,8 +199,8 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
               onDrop={handleDrop}
               className={`relative aspect-4/3 w-full rounded-2xl border-2 transition-all flex flex-col items-center justify-center p-4 overflow-hidden ${
                 isDragOver
-                  ? 'border-stone-900 bg-stone-100'
-                  : 'border-dashed border-stone-300 bg-stone-50/80 hover:bg-stone-50'
+                  ? 'border-stone-900 dark:border-stone-100 bg-stone-100 dark:bg-stone-800'
+                  : 'border-dashed border-stone-300 dark:border-stone-700 bg-stone-50/80 dark:bg-stone-950/40 hover:bg-stone-50 dark:hover:bg-stone-900/60'
               }`}
             >
               {visualMode === 'photo' ? (
@@ -216,7 +216,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                         type="button"
                         id="btn-cambiar-foto"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1.5 bg-white text-stone-900 text-xs font-medium rounded-lg shadow-sm hover:bg-stone-100"
+                        className="px-3 py-1.5 bg-white text-stone-900 text-xs font-medium rounded-lg shadow-sm hover:bg-stone-100 cursor-pointer"
                       >
                         Cambiar foto
                       </button>
@@ -224,7 +224,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                         type="button"
                         id="btn-quitar-foto"
                         onClick={() => setImageUrl('')}
-                        className="px-3 py-1.5 bg-stone-800 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-stone-700"
+                        className="px-3 py-1.5 bg-stone-800 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-stone-700 cursor-pointer"
                       >
                         Quitar
                       </button>
@@ -235,13 +235,13 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                     onClick={() => fileInputRef.current?.click()}
                     className="cursor-pointer text-center flex flex-col items-center justify-center h-full w-full py-4"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white shadow-xs border border-stone-200 flex items-center justify-center text-stone-600 mb-2">
-                      <Upload className="w-5 h-5 text-stone-500" />
+                    <div className="w-12 h-12 rounded-full bg-white dark:bg-stone-800 shadow-xs border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300 mb-2">
+                      <Upload className="w-5 h-5 text-stone-500 dark:text-stone-400" />
                     </div>
-                    <span className="text-xs font-medium text-stone-800">
+                    <span className="text-xs font-medium text-stone-800 dark:text-stone-200">
                       Subir foto de la prenda
                     </span>
-                    <span className="text-[11px] text-stone-400 mt-0.5">
+                    <span className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
                       Haz clic o arrastra una imagen aquí
                     </span>
                   </div>
@@ -256,7 +256,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                     size="lg"
                     className="w-24 h-24 shadow-2xs"
                   />
-                  <span className="text-[11px] text-stone-500 mt-2 font-medium">
+                  <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-2 font-medium">
                     Vista previa de la prenda
                   </span>
                 </div>
@@ -275,7 +275,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
             {/* If icon mode, select icon option */}
             {visualMode === 'icon' && (
               <div>
-                <label className="text-[11px] font-medium text-stone-500 mb-1.5 block">
+                <label className="text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-1.5 block">
                   Elegir ícono de prenda:
                 </label>
                 <div
@@ -288,15 +288,15 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                       type="button"
                       id={`btn-icono-${opt.key}`}
                       onClick={() => setIconKey(opt.key)}
-                      className={`px-2 py-1.5 rounded-lg text-xs flex flex-col items-center gap-1 border transition-all ${
+                      className={`px-2 py-1.5 rounded-lg text-xs flex flex-col items-center gap-1 border transition-all cursor-pointer ${
                         iconKey === opt.key
-                          ? 'border-stone-900 bg-stone-900 text-white shadow-xs'
-                          : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
+                          ? 'border-stone-900 dark:border-stone-100 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-xs'
+                          : 'border-stone-200 dark:border-stone-700/80 bg-white dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600'
                       }`}
                     >
                       <GarmentVisual
                         iconKey={opt.key}
-                        colorHex={iconKey === opt.key ? '#ffffff' : colorHex}
+                        colorHex={iconKey === opt.key ? (colorHex || '#ffffff') : colorHex}
                         size="sm"
                         className="w-7 h-7 bg-transparent border-0"
                       />
@@ -316,7 +316,7 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
             <div className="space-y-2">
               <label
                 htmlFor="input-tipo-prenda"
-                className="text-xs font-semibold text-stone-700 uppercase tracking-wider block"
+                className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
               >
                 Tipo de prenda <span className="text-rose-500">*</span>
               </label>
@@ -331,19 +331,19 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                   }
                 }}
                 placeholder="Ej. Camiseta, Pantalón, Chaqueta, Vestido..."
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 placeholder-stone-400 bg-white focus:outline-hidden focus:ring-2 transition-all ${
+                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 bg-white dark:bg-stone-800/90 focus:outline-hidden focus:ring-2 transition-all ${
                   errors.type
-                    ? 'border-rose-400 focus:ring-rose-200 bg-rose-50/20'
-                    : 'border-stone-200 focus:border-stone-400 focus:ring-stone-200'
+                    ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 bg-rose-50/20 dark:bg-rose-950/20'
+                    : 'border-stone-200 dark:border-stone-700 focus:border-stone-400 dark:focus:border-stone-500 focus:ring-stone-200 dark:focus:ring-stone-700'
                 }`}
               />
               {errors.type && (
-                <p className="text-xs text-rose-600 mt-1 font-medium">{errors.type}</p>
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">{errors.type}</p>
               )}
 
               {/* Sugerencias rápidas de tipo */}
               <div className="pt-1">
-                <span className="text-[11px] text-stone-400 font-medium block mb-1.5">
+                <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium block mb-1.5">
                   Sugerencias rápidas:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -353,10 +353,10 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                       type="button"
                       id={`preset-tipo-${preset.label.toLowerCase()}`}
                       onClick={() => handleSelectTypePreset(preset.label, preset.defaultIcon)}
-                      className={`px-2.5 py-1 rounded-lg text-xs border transition-all ${
+                      className={`px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer ${
                         garmentType.toLowerCase() === preset.label.toLowerCase()
-                          ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                          : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
+                          ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100 shadow-2xs'
+                          : 'bg-stone-50 dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
                       }`}
                     >
                       {preset.label}
@@ -371,18 +371,18 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="input-color-prenda"
-                  className="text-xs font-semibold text-stone-700 uppercase tracking-wider block"
+                  className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
                 >
                   Color <span className="text-rose-500">*</span>
                 </label>
 
                 {/* Color preview badge */}
-                <div className="flex items-center gap-1.5 text-xs text-stone-600">
+                <div className="flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-300">
                   <span
-                    className="w-3.5 h-3.5 rounded-full border border-stone-300 shadow-2xs"
+                    className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 shadow-2xs"
                     style={{ backgroundColor: colorHex }}
                   />
-                  <span className="font-medium text-stone-800">
+                  <span className="font-medium text-stone-800 dark:text-stone-200">
                     {colorName || 'Sin color seleccionado'}
                   </span>
                 </div>
@@ -400,10 +400,10 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                     }
                   }}
                   placeholder="Ej. Azul Marino, Blanco, Beige, Negro..."
-                  className={`flex-1 px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 placeholder-stone-400 bg-white focus:outline-hidden focus:ring-2 transition-all ${
+                  className={`flex-1 px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 bg-white dark:bg-stone-800/90 focus:outline-hidden focus:ring-2 transition-all ${
                     errors.color
-                      ? 'border-rose-400 focus:ring-rose-200 bg-rose-50/20'
-                      : 'border-stone-200 focus:border-stone-400 focus:ring-stone-200'
+                      ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 bg-rose-50/20 dark:bg-rose-950/20'
+                      : 'border-stone-200 dark:border-stone-700 focus:border-stone-400 dark:focus:border-stone-500 focus:ring-stone-200 dark:focus:ring-stone-700'
                   }`}
                 />
 
@@ -415,18 +415,18 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                     value={colorHex}
                     onChange={(e) => setColorHex(e.target.value)}
                     title="Elegir tono personalizado"
-                    className="w-10 h-10 rounded-xl border border-stone-200 cursor-pointer p-0.5 bg-white"
+                    className="w-10 h-10 rounded-xl border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800"
                   />
                 </div>
               </div>
 
               {errors.color && (
-                <p className="text-xs text-rose-600 mt-1 font-medium">{errors.color}</p>
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">{errors.color}</p>
               )}
 
               {/* Paleta de colores rápidos */}
               <div className="pt-1">
-                <span className="text-[11px] text-stone-400 font-medium block mb-1.5">
+                <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium block mb-1.5">
                   Colores habituales:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -438,15 +438,15 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
                         type="button"
                         id={`preset-color-${preset.name.toLowerCase().replace(/\s+/g, '-')}`}
                         onClick={() => handleSelectColorPreset(preset.name, preset.hex)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
-                            : 'bg-white hover:bg-stone-50 text-stone-700 border-stone-200'
+                            ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100 shadow-2xs'
+                            : 'bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
                         }`}
                       >
                         <span
                           className={`w-2.5 h-2.5 rounded-full ${
-                            preset.border ? 'border border-stone-300' : ''
+                            preset.border ? 'border border-stone-300 dark:border-stone-600' : ''
                           }`}
                           style={{ backgroundColor: preset.hex }}
                         />
@@ -463,12 +463,12 @@ export function GarmentForm({ onAddGarment }: GarmentFormProps) {
               <button
                 type="submit"
                 id="btn-guardar-prenda"
-                className="w-full py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 active:scale-[0.99] text-white text-sm font-medium tracking-wide shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 <span>Guardar prenda en el armario</span>
               </button>
-              <p className="text-[11px] text-stone-400 text-center mt-2">
+              <p className="text-[11px] text-stone-400 dark:text-stone-500 text-center mt-2">
                 La prenda se agregará inmediatamente a la galería de tu armario aquí abajo.
               </p>
             </div>
