@@ -7,7 +7,6 @@ import { OutfitCreatorScreen } from './components/OutfitCreatorScreen';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { AuthModal } from './components/AuthModal';
 import { LandingPage } from './components/LandingPage';
-import { ShaderBackground } from './components/ShaderBackground';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 import { useAuth } from './context/AuthContext';
@@ -527,36 +526,35 @@ export default function App() {
   );
 
   return (
-    <div className="relative min-h-screen text-stone-100 flex flex-col selection:bg-[#d9a6ff]/30 selection:text-white">
-      {/* Dynamic ambient WebGL light shader background */}
-      <ShaderBackground />
+    <div className="relative min-h-screen text-stone-100 flex flex-col bg-[#150f24] selection:bg-[#d9a6ff]/30 selection:text-white">
+      {/* Header with Navigation and User Auth - Only rendered on Armario and Outfits tabs, hidden on Landing */}
+      {activeTab !== 'landing' && (
+        <Header
+          garmentCount={garments.length}
+          outfitCount={outfits.length}
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            setCurrentScreen('wardrobe');
+            if (tab === 'outfits') {
+              setTimeout(() => {
+                outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 60);
+            } else if (tab === 'armario') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          user={user}
+          onSignIn={() => handleOpenAuthModal('signin')}
+          onSignOut={logout}
+          isSyncing={isSyncing}
+        />
+      )}
 
-      {/* Header with Navigation and User Auth */}
-      <Header
-        garmentCount={garments.length}
-        outfitCount={outfits.length}
-        activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          setCurrentScreen('wardrobe');
-          if (tab === 'outfits') {
-            setTimeout(() => {
-              outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 60);
-          } else if (tab === 'armario') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-        user={user}
-        onSignIn={() => handleOpenAuthModal('signin')}
-        onSignOut={logout}
-        isSyncing={isSyncing}
-      />
-
-      {/* User Status Bar when Logged In */}
-      {user && (
+      {/* User Status Bar when Logged In - Only on Armario / Outfits */}
+      {user && activeTab !== 'landing' && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 w-full relative z-10">
           <div className="p-3 px-4 rounded-2xl glass-panel text-xs flex items-center justify-between gap-2 border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
             <div className="flex items-center gap-2 text-stone-300">
@@ -650,12 +648,19 @@ export default function App() {
 
       {/* Main Content Area */}
       {activeTab === 'landing' ? (
-        /* Landing Page View */
+        /* Landing Page View (with light ripple shader exclusively in its hero, without header) */
         <LandingPage
           onEnterApp={() => {
             setActiveTab('armario');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
+          onOpenOutfits={() => {
+            setActiveTab('outfits');
+            setTimeout(() => {
+              outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          }}
+          onSignIn={() => handleOpenAuthModal('signin')}
           onSignUp={() => handleOpenAuthModal('signup')}
           onOpenOutfitCreator={() => {
             setActiveTab('armario');

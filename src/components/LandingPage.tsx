@@ -16,10 +16,13 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Garment } from '../types';
+import { ShaderBackground } from './ShaderBackground';
 
 interface LandingPageProps {
   onEnterApp: () => void;
   onSignUp: () => void;
+  onSignIn?: () => void;
+  onOpenOutfits?: () => void;
   onOpenOutfitCreator: () => void;
   totalGarments: number;
   totalOutfits: number;
@@ -51,6 +54,8 @@ const SAMPLE_ITEMS: MockItem[] = [
 export function LandingPage({
   onEnterApp,
   onSignUp,
+  onSignIn,
+  onOpenOutfits,
   onOpenOutfitCreator,
   totalGarments,
   totalOutfits,
@@ -101,60 +106,149 @@ export function LandingPage({
   const topRanked = [...interactiveItems].sort((a, b) => b.wear - a.wear).slice(0, 4);
 
   return (
-    <div className="w-full flex flex-col space-y-24 md:space-y-32 pb-24 text-stone-100">
+    <div className="w-full flex flex-col space-y-24 md:space-y-32 pb-24 text-stone-100 bg-[#150f24]">
       {/* ============ HERO SECTION ============ */}
-      <section className="relative pt-12 md:pt-20 px-4 sm:px-6 max-w-5xl mx-auto w-full text-center flex flex-col items-center">
-        {/* Eyebrow badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-[0_1px_0_0_rgba(255,255,255,0.2)_inset] text-xs font-semibold tracking-wider text-[#d9a6ff] uppercase mb-6 animate-fade-in">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Tu clóset, siempre cerca</span>
+      {/* The light ripple effect is EXCLUSIVELY housed here on the main landing screen, without the global app header */}
+      <section className="relative min-h-screen w-full flex flex-col justify-between overflow-hidden">
+        {/* Dynamic ambient WebGL light ripple shader - exclusively in this hero */}
+        <div className="absolute inset-0 z-0 overflow-hidden bg-[#150f24]">
+          <ShaderBackground className="absolute inset-0 w-full h-full pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#150f24]/10 via-[#150f24]/40 to-[#150f24] pointer-events-none" />
         </div>
 
-        {/* Main Headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-3xl leading-[1.08] drop-shadow-[0_0_35px_rgba(217,166,255,0.35)]">
-          Vestite sin pensarlo dos veces
-        </h1>
+        {/* Minimal Hero Top Bar (Without the global app header) */}
+        <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/25 to-[#ff8fd8]/15 border border-[#d9a6ff]/40 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#d9a6ff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5 drop-shadow-[0_0_8px_rgba(217,166,255,0.6)]"
+              >
+                <path d="M12 4a2 2 0 0 1 2 2c0 1.5-1.5 2-2 3l-8 6a1 1 0 0 0 .6 1.7h18.8a1 1 0 0 0 .6-1.7L14 9" />
+              </svg>
+            </div>
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white font-['Outfit']">
+              Armario Digital
+            </span>
+          </div>
 
-        {/* Subtitle */}
-        <p className="mt-6 text-base sm:text-xl text-stone-300/80 max-w-2xl font-normal leading-relaxed">
-          Guardá cada prenda que tenés, armá looks en segundos y recibí sugerencias según el clima de hoy.
-        </p>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <button
+              type="button"
+              id="btn-hero-ir-armario"
+              onClick={onEnterApp}
+              className="glass-pill px-4 py-2 text-xs font-semibold text-white/90 hover:text-white cursor-pointer"
+            >
+              Mi clóset
+            </button>
+            <button
+              type="button"
+              id="btn-hero-ir-outfits"
+              onClick={onOpenOutfits || onOpenOutfitCreator}
+              className="glass-pill hidden sm:inline-flex px-4 py-2 text-xs font-semibold text-stone-300 hover:text-white cursor-pointer"
+            >
+              Mis outfits
+            </button>
 
-        {/* CTAs */}
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={userEmail ? onEnterApp : onSignUp}
-            className="px-8 py-3.5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] font-bold text-sm sm:text-base shadow-[0_4px_24px_rgba(0,0,0,0.3),0_0_28px_rgba(217,166,255,0.5)] transition-all transform hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer flex items-center gap-2.5"
-          >
-            <span>{userEmail ? 'Abrir mi armario' : 'Empezar gratis'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            {userEmail ? (
+              <button
+                type="button"
+                onClick={onEnterApp}
+                className="px-4 py-2 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_16px_rgba(217,166,255,0.4)] transition-all cursor-pointer"
+              >
+                Abrir armario
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                {onSignIn && (
+                  <button
+                    type="button"
+                    onClick={onSignIn}
+                    className="hidden sm:inline-flex px-3.5 py-2 text-xs font-medium text-stone-300 hover:text-white cursor-pointer"
+                  >
+                    Iniciar sesión
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={onSignUp}
+                  className="px-4 py-2 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_16px_rgba(217,166,255,0.4)] transition-all cursor-pointer"
+                >
+                  Registrarse
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
 
-          <button
-            type="button"
-            onClick={onEnterApp}
-            className="glass-pill px-7 py-3.5 text-sm sm:text-base font-medium text-white/90 hover:text-white cursor-pointer flex items-center gap-2"
-          >
-            <span>Ver el clóset</span>
-            <ChevronRight className="w-4 h-4 text-[#d9a6ff]" />
-          </button>
+        {/* Hero Center Text and CTAs */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16 text-center flex flex-col items-center my-auto">
+          {/* Eyebrow badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-[0_1px_0_0_rgba(255,255,255,0.2)_inset] text-xs font-semibold tracking-wider text-[#d9a6ff] uppercase mb-6 animate-fade-in">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Tu clóset, siempre cerca</span>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-3xl leading-[1.08] drop-shadow-[0_0_35px_rgba(217,166,255,0.35)]">
+            Vestite sin pensarlo dos veces
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mt-6 text-base sm:text-xl text-stone-300/80 max-w-2xl font-normal leading-relaxed">
+            Guardá cada prenda que tenés, armá looks en segundos y recibí sugerencias según el clima de hoy.
+          </p>
+
+          {/* CTAs */}
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <button
+              type="button"
+              id="btn-hero-empezar"
+              onClick={userEmail ? onEnterApp : onSignUp}
+              className="px-8 py-3.5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] font-bold text-sm sm:text-base shadow-[0_4px_24px_rgba(0,0,0,0.3),0_0_28px_rgba(217,166,255,0.5)] transition-all transform hover:-translate-y-0.5 active:translate-y-0.5 cursor-pointer flex items-center gap-2.5"
+            >
+              <span>{userEmail ? 'Abrir mi armario' : 'Empezar gratis'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              id="btn-hero-ver-closet"
+              onClick={onEnterApp}
+              className="glass-pill px-7 py-3.5 text-sm sm:text-base font-medium text-white/90 hover:text-white cursor-pointer flex items-center gap-2"
+            >
+              <span>Ver el clóset</span>
+              <ChevronRight className="w-4 h-4 text-[#d9a6ff]" />
+            </button>
+          </div>
+
+          {/* Quick Highlights Pill */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-stone-300/70">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6ee7c8] shadow-[0_0_8px_#6ee7c8]" />
+              <span>{totalGarments > 0 ? `${totalGarments} prendas en tu clóset` : 'Organizador inteligente'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#d9a6ff] shadow-[0_0_8px_#d9a6ff]" />
+              <span>{totalOutfits > 0 ? `${totalOutfits} combinaciones guardadas` : 'Creador visual de outfits'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#ff8fd8] shadow-[0_0_8px_#ff8fd8]" />
+              <span>Sincronizado en la nube</span>
+            </div>
+          </div>
         </div>
 
-        {/* Quick Highlights Pill */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-stone-300/70">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#6ee7c8] shadow-[0_0_8px_#6ee7c8]" />
-            <span>{totalGarments > 0 ? `${totalGarments} prendas en tu clóset` : 'Organizador inteligente'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#d9a6ff] shadow-[0_0_8px_#d9a6ff]" />
-            <span>{totalOutfits > 0 ? `${totalOutfits} combinaciones guardadas` : 'Creador visual de outfits'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#ff8fd8] shadow-[0_0_8px_#ff8fd8]" />
-            <span>Sincronizado en la nube</span>
-          </div>
+        {/* Subtle scroll indicator / bottom cue */}
+        <div className="relative z-10 pb-6 text-center">
+          <span className="text-[11px] text-stone-400 font-medium tracking-wide">
+            Deslizá para descubrir las funciones ↓
+          </span>
         </div>
       </section>
 
