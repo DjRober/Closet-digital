@@ -39,7 +39,7 @@ export function Header({
           <div className="w-10 h-10 rounded-2xl bg-white/95 border border-white/30 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)] transition-transform group-hover:scale-105 p-1 overflow-hidden">
             <img
               src="/logo.png"
-              alt="Armario Digital Logo"
+              alt="Ropero"
               className="w-full h-full object-contain"
               referrerPolicy="no-referrer"
             />
@@ -47,7 +47,7 @@ export function Header({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold tracking-tight text-white group-hover:text-[#d9a6ff] transition-colors font-['Outfit']">
-                Armario Digital
+                Ropero
               </span>
               <span
                 className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/[0.08] text-[#d9a6ff] border border-white/12 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]"

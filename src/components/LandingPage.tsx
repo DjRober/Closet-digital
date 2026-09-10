@@ -122,13 +122,13 @@ export function LandingPage({
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/20 to-[#ff8fd8]/10 border border-[#d9a6ff]/35 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.25)] p-0.5 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="Armario Digital Logo"
+                alt="Ropero"
                 className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(217,166,255,0.5)]"
                 referrerPolicy="no-referrer"
               />
             </div>
             <span className="text-lg sm:text-xl font-bold tracking-tight text-white font-['Outfit']">
-              Armario Digital
+              Ropero
             </span>
           </div>
 

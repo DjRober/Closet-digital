@@ -154,7 +154,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             <div className="w-10 h-10 rounded-xl bg-white/95 border border-stone-200 dark:border-white/20 flex items-center justify-center p-1 shadow-xs shrink-0 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="Armario Digital"
+                alt="Ropero"
                 className="w-full h-full object-contain"
                 referrerPolicy="no-referrer"
               />
@@ -164,7 +164,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                 {mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión'}
               </h2>
               <p className="text-xs text-stone-400">
-                Respalda tu armario y outfits en Firebase
+                Respalda tu clóset y outfits en la nube
               </p>
             </div>
           </div>

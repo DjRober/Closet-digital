@@ -1,6 +1,6 @@
 {
-  "name": "Armario Digital",
-  "description": "App para organizar tu ropa registrando prendas con foto o ícono, editándolas y combinándolas en outfits personalizados.",
+  "name": "Ropero",
+  "description": "Ropero: tu clóset digital para guardar prendas, armar looks, marcar favoritos, ver estadísticas de uso y recibir sugerencias según el clima.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

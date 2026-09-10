@@ -812,7 +812,7 @@ export default function App() {
       <footer className="relative z-10 border-t border-white/[0.08] py-8 text-center text-xs text-stone-400 bg-white/[0.02] backdrop-blur-md">
         <div className="flex items-center justify-center gap-1.5 mb-1.5">
           <Cloud className="w-3.5 h-3.5 text-[#d9a6ff]" />
-          <span className="font-semibold text-white">Armario Digital</span>
+          <span className="font-semibold text-white">Ropero</span>
           <span>•</span>
           <span>Colecciones privadas por usuario en Firebase</span>
         </div>
