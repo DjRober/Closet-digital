@@ -17,10 +17,10 @@ import {
   saveOutfitToFirestore,
   deleteOutfitFromFirestore,
 } from './lib/firestoreService';
-import { Check, Cloud, LogIn, Mail, AlertCircle, X, UserPlus } from 'lucide-react';
+import { Check, Cloud, Mail, AlertCircle, X, UserPlus, Lock } from 'lucide-react';
 
-const STORAGE_KEY = 'armario_digital_prendas';
-const OUTFITS_STORAGE_KEY = 'armario_digital_outfits';
+const GUEST_STORAGE_KEY = 'armario_digital_guest_prendas';
+const GUEST_OUTFITS_STORAGE_KEY = 'armario_digital_guest_outfits';
 const THEME_KEY = 'armario_digital_tema';
 
 const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
@@ -35,7 +35,7 @@ const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
 ];
 
 export default function App() {
-  const { user, loading: authLoading, signInWithGoogle, logout, authError, clearAuthError } = useAuth();
+  const { user, loading: authLoading, logout, authError, clearAuthError } = useAuth();
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -49,35 +49,9 @@ export default function App() {
     return 'dark';
   });
 
-  const [garments, setGarments] = useState<Garment[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch {
-      // Fall through
-    }
-    return INITIAL_GARMENTS;
-  });
-
-  const [outfits, setOutfits] = useState<Outfit[]>(() => {
-    try {
-      const saved = localStorage.getItem(OUTFITS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed;
-        }
-      }
-    } catch {
-      // Fall through
-    }
-    return INITIAL_SAMPLE_OUTFITS;
-  });
+  // Garments and Outfits state (scoped strictly to the current user or guest)
+  const [garments, setGarments] = useState<Garment[]>([]);
+  const [outfits, setOutfits] = useState<Outfit[]>([]);
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'wardrobe' | 'outfit-creator'>('wardrobe');
@@ -119,24 +93,6 @@ export default function App() {
     }
   }, [theme]);
 
-  // Save garments to localStorage as local cache
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(garments));
-    } catch (e) {
-      console.warn('Could not save garments to localStorage', e);
-    }
-  }, [garments]);
-
-  // Save outfits to localStorage as local cache
-  useEffect(() => {
-    try {
-      localStorage.setItem(OUTFITS_STORAGE_KEY, JSON.stringify(outfits));
-    } catch (e) {
-      console.warn('Could not save outfits to localStorage', e);
-    }
-  }, [outfits]);
-
   // Auto-dismiss toast
   useEffect(() => {
     if (!toastMessage) return;
@@ -146,94 +102,199 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
-  // Real-time Firestore synchronization when user is authenticated
+  // USER-SCOPED DATA INITIALIZATION & FIRESTORE REAL-TIME SYNCHRONIZATION
   useEffect(() => {
-    if (!user) return;
+    // Clear selection and editing mode when user account changes
+    setSelectedGarmentIds([]);
+    setEditingGarment(null);
 
-    setIsSyncing(true);
+    if (user) {
+      // 1. Authenticated User: Load exclusively from their personal cache and Firestore
+      setIsSyncing(true);
 
-    // Subscribe to user garments
-    const unsubscribeGarments = subscribeToGarments(
-      user.uid,
-      (remoteGarments) => {
-        setIsSyncing(false);
-        if (remoteGarments.length > 0) {
+      const userGarmentsKey = `armario_digital_prendas_${user.uid}`;
+      const userOutfitsKey = `armario_digital_outfits_${user.uid}`;
+
+      try {
+        const cachedGarments = localStorage.getItem(userGarmentsKey);
+        if (cachedGarments) {
+          setGarments(JSON.parse(cachedGarments));
+        } else {
+          setGarments([]); // Clean slate for new user account
+        }
+
+        const cachedOutfits = localStorage.getItem(userOutfitsKey);
+        if (cachedOutfits) {
+          setOutfits(JSON.parse(cachedOutfits));
+        } else {
+          setOutfits([]); // Clean slate for new user account
+        }
+      } catch (e) {
+        setGarments([]);
+        setOutfits([]);
+      }
+
+      // Real-time Firestore subscription for this user's garments
+      const unsubscribeGarments = subscribeToGarments(
+        user.uid,
+        (remoteGarments) => {
+          setIsSyncing(false);
           setGarments(remoteGarments);
-        } else {
-          // If remote is empty, seed with current local garments so user doesn't lose anything
-          garments.forEach((garment) => {
-            saveGarmentToFirestore(user.uid, garment).catch((err) =>
-              console.error('Error seeding garment to Firestore:', err)
-            );
-          });
+          try {
+            localStorage.setItem(userGarmentsKey, JSON.stringify(remoteGarments));
+          } catch (e) {
+            console.warn('Error saving to user cache:', e);
+          }
+        },
+        (err) => {
+          setIsSyncing(false);
+          console.error('Error in user garments Firestore subscription:', err);
         }
-      },
-      (err) => {
-        setIsSyncing(false);
-        console.error('Error in garments Firestore subscription:', err);
-      }
-    );
+      );
 
-    // Subscribe to user outfits
-    const unsubscribeOutfits = subscribeToOutfits(
-      user.uid,
-      (remoteOutfits) => {
-        if (remoteOutfits.length > 0) {
+      // Real-time Firestore subscription for this user's outfits
+      const unsubscribeOutfits = subscribeToOutfits(
+        user.uid,
+        (remoteOutfits) => {
           setOutfits(remoteOutfits);
-        } else {
-          // If remote is empty, seed with current local outfits
-          outfits.forEach((outfit) => {
-            saveOutfitToFirestore(user.uid, outfit).catch((err) =>
-              console.error('Error seeding outfit to Firestore:', err)
-            );
-          });
+          try {
+            localStorage.setItem(userOutfitsKey, JSON.stringify(remoteOutfits));
+          } catch (e) {
+            console.warn('Error saving to user outfits cache:', e);
+          }
+        },
+        (err) => {
+          console.error('Error in user outfits Firestore subscription:', err);
         }
-      },
-      (err) => {
-        console.error('Error in outfits Firestore subscription:', err);
-      }
-    );
+      );
 
-    return () => {
-      unsubscribeGarments();
-      unsubscribeOutfits();
-    };
+      return () => {
+        unsubscribeGarments();
+        unsubscribeOutfits();
+      };
+    } else {
+      // 2. Guest User (Unauthenticated): Load isolated guest storage
+      setIsSyncing(false);
+      try {
+        const guestGarments = localStorage.getItem(GUEST_STORAGE_KEY);
+        if (guestGarments) {
+          const parsed = JSON.parse(guestGarments);
+          setGarments(Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_GARMENTS);
+        } else {
+          setGarments(INITIAL_GARMENTS);
+        }
+
+        const guestOutfits = localStorage.getItem(GUEST_OUTFITS_STORAGE_KEY);
+        if (guestOutfits) {
+          const parsed = JSON.parse(guestOutfits);
+          setOutfits(Array.isArray(parsed) ? parsed : INITIAL_SAMPLE_OUTFITS);
+        } else {
+          setOutfits(INITIAL_SAMPLE_OUTFITS);
+        }
+      } catch (e) {
+        setGarments(INITIAL_GARMENTS);
+        setOutfits(INITIAL_SAMPLE_OUTFITS);
+      }
+    }
   }, [user]);
+
+  // Persist current garments to the correct user or guest storage key
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem(`armario_digital_prendas_${user.uid}`, JSON.stringify(garments));
+      } else {
+        localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(garments));
+      }
+    } catch (e) {
+      console.warn('Could not save garments locally:', e);
+    }
+  }, [garments, user]);
+
+  // Persist current outfits to the correct user or guest storage key
+  useEffect(() => {
+    try {
+      if (user) {
+        localStorage.setItem(`armario_digital_outfits_${user.uid}`, JSON.stringify(outfits));
+      } else {
+        localStorage.setItem(GUEST_OUTFITS_STORAGE_KEY, JSON.stringify(outfits));
+      }
+    } catch (e) {
+      console.warn('Could not save outfits locally:', e);
+    }
+  }, [outfits, user]);
 
   const handleOpenAuthModal = (mode: 'signin' | 'signup' = 'signup') => {
     setAuthModalInitialMode(mode);
     setIsAuthModalOpen(true);
   };
 
+  // Optional: Allows a brand-new user to import starter sample clothes into their private account
+  const handleLoadSampleGarmentsForUser = async () => {
+    if (!user) return;
+    setIsSyncing(true);
+    const now = Date.now();
+    const userSamples: Garment[] = INITIAL_GARMENTS.map((g, idx) => ({
+      ...g,
+      id: `user-${user.uid}-sample-${now}-${idx + 1}`,
+      userId: user.uid,
+      createdAt: now - idx * 1000,
+    }));
+
+    setGarments(userSamples);
+
+    try {
+      for (const item of userSamples) {
+        await saveGarmentToFirestore(user.uid, item);
+      }
+      setIsSyncing(false);
+      showToast('Prendas de muestra añadidas a tu armario personal');
+    } catch (error) {
+      setIsSyncing(false);
+      console.error('Error saving sample garments for user:', error);
+      showToast('Prendas añadidas localmente');
+    }
+  };
+
   const handleAddGarment = async (newGarment: Garment) => {
-    setGarments((prev) => [newGarment, ...prev]);
+    const garmentWithUser: Garment = {
+      ...newGarment,
+      userId: user ? user.uid : undefined,
+    };
+
+    setGarments((prev) => [garmentWithUser, ...prev]);
 
     if (user) {
       try {
         setIsSyncing(true);
-        await saveGarmentToFirestore(user.uid, newGarment);
+        await saveGarmentToFirestore(user.uid, garmentWithUser);
         setIsSyncing(false);
-        showToast(`Prenda guardada en Firestore`);
+        showToast('Prenda guardada en tu armario de Firebase');
       } catch (error) {
         setIsSyncing(false);
         console.error('Error saving garment to Firestore:', error);
-        showToast(`Prenda guardada localmente (error en sincronización)`);
+        showToast('Prenda guardada localmente (error en sincronización)');
       }
     } else {
-      showToast(`Prenda "${newGarment.type}" agregada al armario`);
+      showToast(`Prenda "${garmentWithUser.type}" agregada al armario`);
     }
   };
 
   const handleUpdateGarment = async (updatedGarment: Garment) => {
+    const garmentWithUser: Garment = {
+      ...updatedGarment,
+      userId: user ? user.uid : undefined,
+    };
+
     setGarments((prev) =>
-      prev.map((g) => (g.id === updatedGarment.id ? updatedGarment : g))
+      prev.map((g) => (g.id === garmentWithUser.id ? garmentWithUser : g))
     );
 
     // Also update any outfits containing this garment
     const updatedOutfits = outfits.map((outfit) => ({
       ...outfit,
       garments: outfit.garments.map((g) =>
-        g.id === updatedGarment.id ? updatedGarment : g
+        g.id === garmentWithUser.id ? garmentWithUser : g
       ),
     }));
     setOutfits(updatedOutfits);
@@ -242,21 +303,21 @@ export default function App() {
     if (user) {
       try {
         setIsSyncing(true);
-        await saveGarmentToFirestore(user.uid, updatedGarment);
+        await saveGarmentToFirestore(user.uid, garmentWithUser);
         for (const o of updatedOutfits) {
-          if (o.garmentIds.includes(updatedGarment.id)) {
+          if (o.garmentIds.includes(garmentWithUser.id)) {
             await saveOutfitToFirestore(user.uid, o);
           }
         }
         setIsSyncing(false);
-        showToast(`Prenda actualizada en Firestore`);
+        showToast('Prenda actualizada en tu armario');
       } catch (error) {
         setIsSyncing(false);
         console.error('Error updating garment in Firestore:', error);
-        showToast(`Prenda actualizada`);
+        showToast('Prenda actualizada');
       }
     } else {
-      showToast(`Prenda "${updatedGarment.type}" actualizada`);
+      showToast(`Prenda "${garmentWithUser.type}" actualizada`);
     }
   };
 
@@ -282,38 +343,67 @@ export default function App() {
   const handleConfirmDelete = async () => {
     if (!garmentToDelete) return;
     const deletedId = garmentToDelete.id;
+    const deletedName = garmentToDelete.type;
 
-    setGarments((prev) => prev.filter((g) => g.id !== deletedId));
+    // 1. Optimistic local updates
+    const updatedGarments = garments.filter((g) => g.id !== deletedId);
+    setGarments(updatedGarments);
     setSelectedGarmentIds((prev) => prev.filter((id) => id !== deletedId));
     if (editingGarment?.id === deletedId) {
       setEditingGarment(null);
     }
 
-    // Remove garment from outfits
-    const updatedOutfits = outfits.map((o) => ({
-      ...o,
-      garmentIds: o.garmentIds.filter((id) => id !== deletedId),
-      garments: o.garments.filter((g) => g.id !== deletedId),
-    }));
+    // 2. Identify and update only outfits that contained this garment
+    const affectedOutfits = outfits.filter((o) => o.garmentIds.includes(deletedId));
+    const updatedOutfits = outfits.map((o) => {
+      if (!o.garmentIds.includes(deletedId)) return o;
+      return {
+        ...o,
+        garmentIds: o.garmentIds.filter((id) => id !== deletedId),
+        garments: o.garments.filter((g) => g.id !== deletedId),
+      };
+    });
     setOutfits(updatedOutfits);
     setGarmentToDelete(null);
 
     if (user) {
       try {
-        setIsSyncing(true);
+        localStorage.setItem(`armario_digital_prendas_${user.uid}`, JSON.stringify(updatedGarments));
+        localStorage.setItem(`armario_digital_outfits_${user.uid}`, JSON.stringify(updatedOutfits));
+      } catch (e) {
+        console.warn('Error updating local cache:', e);
+      }
+    }
+
+    // 3. Persist to Firestore if user is authenticated
+    if (user) {
+      setIsSyncing(true);
+      try {
         await deleteGarmentFromFirestore(user.uid, deletedId);
-        for (const o of updatedOutfits) {
-          await saveOutfitToFirestore(user.uid, o);
+
+        // Update affected outfits in Firestore
+        for (const affected of affectedOutfits) {
+          const updatedOutfit: Outfit = {
+            ...affected,
+            garmentIds: affected.garmentIds.filter((id) => id !== deletedId),
+            garments: affected.garments.filter((g) => g.id !== deletedId),
+            userId: user.uid,
+          };
+          try {
+            await saveOutfitToFirestore(user.uid, updatedOutfit);
+          } catch (err) {
+            console.warn('Error updating affected outfit in Firestore:', err);
+          }
         }
         setIsSyncing(false);
-        showToast(`Prenda eliminada de Firestore`);
+        showToast(`Prenda "${deletedName}" eliminada correctamente`);
       } catch (error) {
         setIsSyncing(false);
-        console.error('Error deleting from Firestore:', error);
-        showToast(`Prenda eliminada del armario`);
+        console.error('Error deleting garment from Firestore:', error);
+        showToast('Prenda eliminada localmente (error al sincronizar)');
       }
     } else {
-      showToast(`Prenda eliminada del armario`);
+      showToast(`Prenda "${deletedName}" eliminada del armario`);
     }
   };
 
@@ -374,7 +464,7 @@ export default function App() {
         setIsSyncing(true);
         await saveOutfitToFirestore(user.uid, newOutfit);
         setIsSyncing(false);
-        showToast(`Outfit guardado en Firestore`);
+        showToast('Outfit guardado en tu colección de Firestore');
       } catch (error) {
         setIsSyncing(false);
         console.error('Error saving outfit to Firestore:', error);
@@ -392,21 +482,33 @@ export default function App() {
   };
 
   const handleDeleteOutfit = async (outfitId: string) => {
-    setOutfits((prev) => prev.filter((o) => o.id !== outfitId));
+    const targetOutfit = outfits.find((o) => o.id === outfitId);
+    const outfitName = targetOutfit?.name || 'Outfit';
+
+    // 1. Optimistic local update
+    const updated = outfits.filter((o) => o.id !== outfitId);
+    setOutfits(updated);
 
     if (user) {
+      const userOutfitsKey = `armario_digital_outfits_${user.uid}`;
       try {
-        setIsSyncing(true);
+        localStorage.setItem(userOutfitsKey, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Error updating local outfit cache:', e);
+      }
+
+      setIsSyncing(true);
+      try {
         await deleteOutfitFromFirestore(user.uid, outfitId);
         setIsSyncing(false);
-        showToast('Outfit eliminado de Firestore');
+        showToast(`"${outfitName}" eliminado de tu cuenta`);
       } catch (error) {
         setIsSyncing(false);
         console.error('Error deleting outfit from Firestore:', error);
-        showToast('Outfit eliminado');
+        showToast(`"${outfitName}" eliminado localmente`);
       }
     } else {
-      showToast('Outfit eliminado');
+      showToast(`"${outfitName}" eliminado`);
     }
   };
 
@@ -446,6 +548,24 @@ export default function App() {
         isSyncing={isSyncing}
       />
 
+      {/* User Status Bar when Logged In */}
+      {user && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 w-full">
+          <div className="p-2.5 px-3.5 rounded-xl bg-stone-100/80 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 text-xs flex items-center justify-between gap-2 shadow-2xs">
+            <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>
+                Sesión activa como <strong className="text-stone-900 dark:text-stone-200">{user.displayName || user.email}</strong>. Tus datos son privados y exclusivos de tu cuenta.
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <Cloud className={`w-3.5 h-3.5 ${isSyncing ? 'animate-pulse' : ''}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'Sincronizando...' : 'Conectado a tu base de datos'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Auth Error Banner if any */}
       {authError && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
@@ -464,7 +584,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Firebase Cloud Sync Banner for Guests with Email & Password option */}
+      {/* Firebase Cloud Sync Banner for Guests */}
       {!user && !authLoading && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
           <div
@@ -477,10 +597,10 @@ export default function App() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-                  Respalda tu armario en la nube con Firebase
+                  Crea tu cuenta para tener tu armario privado
                 </p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Regístrate gratis con tu correo electrónico o cuenta de Google para acceder a tus prendas desde cualquier dispositivo.
+                  Cada usuario tiene su propia colección de ropa y outfits aislada en Firestore.
                 </p>
               </div>
             </div>
@@ -524,7 +644,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
         {currentScreen === 'outfit-creator' ? (
-          /* Nueva Pantalla: Ver prendas juntas y guardar outfit */
+          /* Pantalla: Ver prendas juntas y guardar outfit */
           <OutfitCreatorScreen
             selectedGarments={selectedGarmentsList}
             onSaveOutfit={handleSaveOutfit}
@@ -544,19 +664,21 @@ export default function App() {
               />
             </div>
 
-            {/* Galería de prendas en el armario con soporte de selección para outfit */}
+            {/* Galería de prendas en el armario */}
             <div ref={gallerySectionRef} className="scroll-mt-6">
               <GarmentGallery
                 garments={garments}
                 editingGarmentId={editingGarment?.id}
                 selectedGarmentIds={selectedGarmentIds}
                 isSelectionMode={isSelectionMode}
+                isUserLoggedIn={Boolean(user)}
                 onToggleSelectionMode={handleToggleSelectionMode}
                 onSelectGarment={handleSelectGarment}
                 onToggleSelectGarment={handleToggleSelectGarment}
                 onClearSelection={handleClearSelection}
                 onCreateOutfitClick={handleOpenOutfitCreator}
                 onDeleteRequest={handleRequestDelete}
+                onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
               />
             </div>
 
@@ -599,9 +721,9 @@ export default function App() {
           <Cloud className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-medium text-stone-600 dark:text-stone-400">Armario Digital</span>
           <span>•</span>
-          <span>Firebase Firestore & Auth</span>
+          <span>Colecciones privadas por usuario en Firebase</span>
         </div>
-        <p>Registro de prendas y organizador de outfits con respaldo en la nube</p>
+        <p>Cada usuario cuenta con su propia colección independiente de prendas y outfits</p>
       </footer>
     </div>
   );

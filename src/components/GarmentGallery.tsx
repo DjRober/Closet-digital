@@ -8,12 +8,14 @@ interface GarmentGalleryProps {
   editingGarmentId?: string | null;
   selectedGarmentIds: string[];
   isSelectionMode: boolean;
+  isUserLoggedIn?: boolean;
   onToggleSelectionMode: () => void;
   onSelectGarment: (garment: Garment) => void;
   onToggleSelectGarment: (garment: Garment) => void;
   onClearSelection: () => void;
   onCreateOutfitClick: () => void;
   onDeleteRequest: (garment: Garment) => void;
+  onLoadSampleGarments?: () => void;
 }
 
 export function GarmentGallery({
@@ -21,12 +23,14 @@ export function GarmentGallery({
   editingGarmentId,
   selectedGarmentIds,
   isSelectionMode,
+  isUserLoggedIn = false,
   onToggleSelectionMode,
   onSelectGarment,
   onToggleSelectGarment,
   onClearSelection,
   onCreateOutfitClick,
   onDeleteRequest,
+  onLoadSampleGarments,
 }: GarmentGalleryProps) {
   const selectedCount = selectedGarmentIds.length;
 
@@ -122,17 +126,33 @@ export function GarmentGallery({
       {garments.length === 0 ? (
         <div
           id="armario-empty-state"
-          className="rounded-2xl border-2 border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 p-12 text-center"
+          className="rounded-2xl border-2 border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/40 p-10 sm:p-12 text-center"
         >
           <div className="mx-auto w-12 h-12 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-400 dark:text-stone-500 mb-3">
             <Sparkles className="w-6 h-6" />
           </div>
           <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100">
-            Aún no hay prendas en el armario
+            {isUserLoggedIn ? 'Tu armario personal está listo y vacío' : 'Aún no hay prendas en el armario'}
           </h3>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">
-            Completa los datos arriba (foto o ícono, tipo y color) y presiona &quot;Guardar prenda&quot; para registrar tu primera pieza.
+            {isUserLoggedIn
+              ? 'Tus prendas y outfits se guardarán de forma exclusiva y privada para tu cuenta en la base de datos.'
+              : 'Completa los datos arriba (foto o ícono, tipo y color) y presiona "Guardar prenda" para registrar tu primera pieza.'}
           </p>
+
+          {isUserLoggedIn && onLoadSampleGarments && (
+            <div className="mt-4">
+              <button
+                type="button"
+                id="btn-cargar-prendas-muestra"
+                onClick={onLoadSampleGarments}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-medium shadow-2xs transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Cargar 3 prendas de ejemplo para probar</span>
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div

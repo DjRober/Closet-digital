@@ -147,9 +147,14 @@ export function Header({
                     <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
                       {user.email}
                     </p>
-                    <div className="mt-2 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                      <Cloud className="w-3 h-3" />
-                      <span>Sincronizando con Firebase</span>
+                    <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800/80 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        <Cloud className="w-3 h-3 shrink-0" />
+                        <span>Base de datos personal activa</span>
+                      </div>
+                      <p className="text-[10px] text-stone-400 dark:text-stone-500">
+                        Prendas y outfits privados para tu cuenta
+                      </p>
                     </div>
                   </div>
                   <button
