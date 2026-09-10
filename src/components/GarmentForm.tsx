@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Check, Upload, Sparkles, Edit3, X } from 'lucide-react';
+import { Camera, Check, Upload, Sparkles, Edit3, X, Wand2, Eraser, Loader2 } from 'lucide-react';
 import { Garment, GarmentIconKey } from '../types';
-import { GARMENT_TYPE_PRESETS, COLOR_PRESETS, ICON_OPTIONS } from '../data/garmentOptions';
+import { GARMENT_TYPE_PRESETS, COLOR_PRESETS, ICON_OPTIONS, guessIconFromType } from '../data/garmentOptions';
 import { GarmentVisual } from './GarmentVisual';
+import { removeBackground } from '../lib/backgroundRemoval';
+import { detectGarment, isAiEnabled } from '../lib/ai';
+import { resizeToDataUrl } from '../lib/image';
 
 interface GarmentFormProps {
   onAddGarment: (garment: Garment) => void;
@@ -30,6 +33,9 @@ export function GarmentForm({
   const [errors, setErrors] = useState<{ type?: string; color?: string }>({});
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('¡Prenda guardada!');
+  const [removingBg, setRemovingBg] = useState(false);
+  const [detecting, setDetecting] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,12 +78,54 @@ export function GarmentForm({
       alert('Por favor selecciona un archivo de imagen válido.');
       return;
     }
+    setAiError(null);
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setImageUrl(event.target?.result as string);
+    reader.onload = async (event) => {
+      const raw = event.target?.result as string;
       setVisualMode('photo');
+      try {
+        // Reducimos la foto para no exceder el límite de 1 MB de Firestore
+        setImageUrl(await resizeToDataUrl(raw, 1024, 'image/jpeg', 0.85));
+      } catch {
+        setImageUrl(raw);
+      }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleRemoveBackground = async () => {
+    if (!imageUrl || removingBg) return;
+    setAiError(null);
+    setRemovingBg(true);
+    try {
+      setImageUrl(await removeBackground(imageUrl));
+    } catch (e) {
+      console.error('Error al quitar el fondo:', e);
+      setAiError('No se pudo quitar el fondo. Intenta con otra foto.');
+    } finally {
+      setRemovingBg(false);
+    }
+  };
+
+  const handleDetectGarment = async () => {
+    if (!imageUrl || detecting) return;
+    setAiError(null);
+    setDetecting(true);
+    try {
+      const result = await detectGarment(imageUrl);
+      if (result.type) {
+        setGarmentType(result.type);
+        setIconKey(guessIconFromType(result.type));
+      }
+      if (result.color) setColorName(result.color);
+      if (result.colorHex) setColorHex(result.colorHex);
+      setErrors({});
+    } catch (e) {
+      console.error('Error al detectar la prenda:', e);
+      setAiError(e instanceof Error ? e.message : 'No se pudo detectar la prenda.');
+    } finally {
+      setDetecting(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -357,6 +405,43 @@ export function GarmentForm({
                 className="hidden"
               />
             </div>
+
+            {/* Acciones de IA (solo con foto cargada) */}
+            {visualMode === 'photo' && imageUrl && (
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    id="btn-quitar-fondo"
+                    onClick={handleRemoveBackground}
+                    disabled={removingBg || detecting}
+                    className="glass-pill inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-200 hover:text-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {removingBg ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eraser className="w-3.5 h-3.5 text-[#d9a6ff]" />}
+                    <span>{removingBg ? 'Quitando fondo…' : 'Quitar fondo'}</span>
+                  </button>
+
+                  {isAiEnabled && (
+                    <button
+                      type="button"
+                      id="btn-detectar-prenda"
+                      onClick={handleDetectGarment}
+                      disabled={detecting || removingBg}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#d9a6ff] to-[#ff8fd8] hover:from-[#eccbff] hover:to-[#ffa6e2] text-[#150f24] text-xs font-bold shadow-[0_0_15px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {detecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                      <span>{detecting ? 'Detectando…' : 'Autocompletar con IA'}</span>
+                    </button>
+                  )}
+                </div>
+                {aiError && <p className="text-[11px] text-rose-300">{aiError}</p>}
+                <p className="text-[10px] text-stone-500 leading-snug">
+                  {isAiEnabled
+                    ? 'Quita el fondo para una foto tipo catálogo, y "Autocompletar" detecta tipo y color.'
+                    : 'Quita el fondo para una foto tipo catálogo.'}
+                </p>
+              </div>
+            )}
 
             {/* If icon mode, select icon option */}
             {visualMode === 'icon' && (

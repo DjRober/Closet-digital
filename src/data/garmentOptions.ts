@@ -42,6 +42,18 @@ export const ICON_OPTIONS: { key: GarmentIconKey; label: string }[] = [
   { key: 'hanger', label: 'General / Percha' },
 ];
 
+/** Adivina el ícono de prenda a partir de un texto de tipo (ej. el detectado por IA) */
+export function guessIconFromType(type: string): GarmentIconKey {
+  const t = type.toLowerCase();
+  if (/vestido|mono|enterizo|jumpsuit|overol/.test(t)) return 'dress';
+  if (/pantal|jean|vaquero|short|bermuda|falda|legging|jogger/.test(t)) return 'pants';
+  if (/zapa|sneaker|bota|bot[ií]n|sandalia|mocas|tac[oó]n|calzado|tenis/.test(t)) return 'shoes';
+  if (/chaqueta|abrigo|cazadora|blazer|chamarra|gabardina|cardigan|parka|saco/.test(t)) return 'jacket';
+  if (/camisa|camiseta|top|blusa|su[eé]ter|sudadera|hoodie|polo|jersey|remera|playera|chaleco/.test(t)) return 'shirt';
+  if (/accesorio|bufanda|gorra|sombrero|cintur|bolso|cartera|collar|reloj|gafas|lentes|aros?/.test(t)) return 'accessory';
+  return 'hanger';
+}
+
 // Initial sample garments to give the user a realistic feel immediately
 export const INITIAL_GARMENTS = [
   {
