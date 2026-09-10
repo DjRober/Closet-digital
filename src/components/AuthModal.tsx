@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Mail, Lock, User as UserIcon, Eye, EyeOff, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { X, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface AuthModalProps {
@@ -15,7 +15,6 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localValidationMessage, setLocalValidationMessage] = useState<string | null>(null);
@@ -48,29 +47,57 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
     clearAuthError();
 
     const trimmedEmail = email.trim();
+
+    // 1. Validar correo obligatorio
     if (!trimmedEmail) {
-      setLocalValidationMessage('Ingresa tu correo electrónico.');
+      setLocalValidationMessage('El correo electrónico es obligatorio y no puede estar vacío.');
       return;
     }
 
+    // 2. Validar formato de correo
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setLocalValidationMessage('Por favor ingresa un correo con formato válido (ejemplo: usuario@correo.com).');
+      return;
+    }
+
+    // 3. Validar longitud máxima de correo
+    if (trimmedEmail.length > 100) {
+      setLocalValidationMessage('El correo electrónico es demasiado largo (máximo 100 caracteres).');
+      return;
+    }
+
+    // 4. Validar contraseña obligatoria
     if (!password) {
-      setLocalValidationMessage('Ingresa una contraseña.');
+      setLocalValidationMessage('La contraseña es obligatoria y no puede estar vacía.');
       return;
     }
 
+    // 5. Validar longitud mínima de contraseña
     if (password.length < 6) {
-      setLocalValidationMessage('La contraseña debe tener un mínimo de 6 caracteres.');
+      setLocalValidationMessage('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    // 6. Validar longitud máxima de contraseña
+    if (password.length > 128) {
+      setLocalValidationMessage('La contraseña es demasiado larga (máximo 128 caracteres).');
       return;
     }
 
     if (mode === 'signup') {
+      if (!confirmPassword) {
+        setLocalValidationMessage('Debes confirmar tu contraseña para completar el registro.');
+        return;
+      }
+
       if (password !== confirmPassword) {
-        setLocalValidationMessage('Las contraseñas no coinciden.');
+        setLocalValidationMessage('Las contraseñas no coinciden. Verifícalas e inténtalo nuevamente.');
         return;
       }
 
       setIsSubmitting(true);
-      const success = await signUpWithEmail(trimmedEmail, password, displayName);
+      const success = await signUpWithEmail(trimmedEmail, password);
       setIsSubmitting(false);
 
       if (success) {
@@ -187,31 +214,6 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             </div>
           )}
 
-          {/* Optional Display Name (only in signup mode) */}
-          {mode === 'signup' && (
-            <div>
-              <label
-                htmlFor="input-auth-nombre"
-                className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5"
-              >
-                Nombre o apodo <span className="text-stone-400 font-normal">(opcional)</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
-                  <UserIcon className="w-4 h-4" />
-                </div>
-                <input
-                  type="text"
-                  id="input-auth-nombre"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Ej. Roberto"
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Email field */}
           <div>
             <label
@@ -228,8 +230,12 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                 type="email"
                 id="input-auth-correo"
                 required
+                maxLength={100}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (localValidationMessage) setLocalValidationMessage(null);
+                }}
                 placeholder="tu@correo.com"
                 autoComplete="email"
                 className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
@@ -253,8 +259,12 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                 type={showPassword ? 'text' : 'password'}
                 id="input-auth-contrasena"
                 required
+                maxLength={128}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (localValidationMessage) setLocalValidationMessage(null);
+                }}
                 placeholder="Mínimo 6 caracteres"
                 autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 className="w-full pl-9 pr-10 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
@@ -287,8 +297,12 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                   type={showPassword ? 'text' : 'password'}
                   id="input-auth-confirmar-contrasena"
                   required
+                  maxLength={128}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (localValidationMessage) setLocalValidationMessage(null);
+                  }}
                   placeholder="Repite tu contraseña"
                   autoComplete="new-password"
                   className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
@@ -296,6 +310,14 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
               </div>
             </div>
           )}
+
+          {/* Notice of data handling */}
+          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/80 text-[11px] text-stone-500 dark:text-stone-400">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <p className="leading-snug">
+              <strong className="text-stone-700 dark:text-stone-200">Uso de datos:</strong> Tu correo y contraseña se emplean únicamente para autenticar tu cuenta y aislar tus prendas en la base de datos protegida.
+            </p>
+          </div>
 
           {/* Submit button */}
           <button

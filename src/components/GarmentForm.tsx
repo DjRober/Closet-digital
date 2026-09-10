@@ -127,11 +127,21 @@ export function GarmentForm({
     e.preventDefault();
 
     const newErrors: { type?: string; color?: string } = {};
-    if (!garmentType.trim()) {
-      newErrors.type = 'Por favor especifica el tipo de prenda (ej. Camiseta, Pantalón).';
+    const trimmedType = garmentType.trim();
+    const trimmedColor = colorName.trim();
+
+    // Validar tipo de prenda
+    if (!trimmedType) {
+      newErrors.type = 'El tipo de prenda es obligatorio y no puede ir vacío.';
+    } else if (trimmedType.length > 50) {
+      newErrors.type = `El tipo de prenda es demasiado largo (máximo 50 caracteres, tiene ${trimmedType.length}).`;
     }
-    if (!colorName.trim()) {
-      newErrors.color = 'Por favor especifica o selecciona un color.';
+
+    // Validar color de prenda
+    if (!trimmedColor) {
+      newErrors.color = 'El color de la prenda es obligatorio y no puede ir vacío.';
+    } else if (trimmedColor.length > 40) {
+      newErrors.color = `El color es demasiado largo (máximo 40 caracteres, tiene ${trimmedColor.length}).`;
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -142,8 +152,8 @@ export function GarmentForm({
     if (editingGarment) {
       const updatedGarment: Garment = {
         ...editingGarment,
-        type: garmentType.trim(),
-        color: colorName.trim(),
+        type: trimmedType,
+        color: trimmedColor,
         colorHex: colorHex,
         imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
         iconKey: iconKey,
@@ -162,8 +172,8 @@ export function GarmentForm({
     } else {
       const newGarment: Garment = {
         id: `garment-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        type: garmentType.trim(),
-        color: colorName.trim(),
+        type: trimmedType,
+        color: trimmedColor,
         colorHex: colorHex,
         imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
         iconKey: iconKey,
@@ -339,6 +349,9 @@ export function GarmentForm({
                     <span className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
                       Haz clic o arrastra una imagen aquí
                     </span>
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 max-w-[220px]">
+                      Solo la prenda aislada (evita rostros o datos personales)
+                    </span>
                   </div>
                 )
               ) : (
@@ -409,15 +422,21 @@ export function GarmentForm({
           <div className="md:col-span-7 flex flex-col space-y-5">
             {/* Campo Tipo de Prenda */}
             <div className="space-y-2">
-              <label
-                htmlFor="input-tipo-prenda"
-                className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
-              >
-                Tipo de prenda <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="input-tipo-prenda"
+                  className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
+                >
+                  Tipo de prenda <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-stone-400">
+                  {garmentType.length}/50
+                </span>
+              </div>
               <input
                 id="input-tipo-prenda"
                 type="text"
+                maxLength={50}
                 value={garmentType}
                 onChange={(e) => {
                   setGarmentType(e.target.value);
@@ -480,6 +499,9 @@ export function GarmentForm({
                   <span className="font-medium text-stone-800 dark:text-stone-200">
                     {colorName || 'Sin color seleccionado'}
                   </span>
+                  <span className="text-[11px] text-stone-400 ml-1">
+                    ({colorName.length}/40)
+                  </span>
                 </div>
               </div>
 
@@ -487,6 +509,7 @@ export function GarmentForm({
                 <input
                   id="input-color-prenda"
                   type="text"
+                  maxLength={40}
                   value={colorName}
                   onChange={(e) => {
                     setColorName(e.target.value);

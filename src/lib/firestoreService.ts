@@ -51,14 +51,53 @@ export function subscribeToGarments(
 }
 
 /**
+ * Validate garment data before storing
+ */
+export function validateGarmentData(garment: Garment): void {
+  if (!garment.type || !garment.type.trim()) {
+    throw new Error('El tipo de prenda es obligatorio y no puede ir vacío.');
+  }
+  if (garment.type.trim().length > 50) {
+    throw new Error('El tipo de prenda es demasiado largo (máximo 50 caracteres).');
+  }
+  if (!garment.color || !garment.color.trim()) {
+    throw new Error('El color de la prenda es obligatorio y no puede ir vacío.');
+  }
+  if (garment.color.trim().length > 40) {
+    throw new Error('El color de la prenda es demasiado largo (máximo 40 caracteres).');
+  }
+}
+
+/**
+ * Validate outfit data before storing
+ */
+export function validateOutfitData(outfit: Outfit): void {
+  if (!outfit.name || !outfit.name.trim()) {
+    throw new Error('El nombre del outfit es obligatorio y no puede ir vacío.');
+  }
+  if (outfit.name.trim().length > 60) {
+    throw new Error('El nombre del outfit es demasiado largo (máximo 60 caracteres).');
+  }
+  if (!outfit.garmentIds || outfit.garmentIds.length === 0) {
+    throw new Error('El outfit debe incluir al menos una prenda.');
+  }
+  if (outfit.occasion && outfit.occasion.trim().length > 40) {
+    throw new Error('La ocasión es demasiado larga (máximo 40 caracteres).');
+  }
+}
+
+/**
  * Save or update a garment in Firestore
  */
 export async function saveGarmentToFirestore(userId: string, garment: Garment): Promise<void> {
+  validateGarmentData(garment);
   const path = `users/${userId}/garments/${garment.id}`;
   try {
     const garmentRef = doc(db, 'users', userId, 'garments', garment.id);
     const dataToSave: Garment = {
       ...garment,
+      type: garment.type.trim(),
+      color: garment.color.trim(),
       userId,
     };
     await setDoc(garmentRef, dataToSave, { merge: true });
@@ -124,11 +163,14 @@ export function subscribeToOutfits(
  * Save or update an outfit in Firestore
  */
 export async function saveOutfitToFirestore(userId: string, outfit: Outfit): Promise<void> {
+  validateOutfitData(outfit);
   const path = `users/${userId}/outfits/${outfit.id}`;
   try {
     const outfitRef = doc(db, 'users', userId, 'outfits', outfit.id);
     const dataToSave: Outfit = {
       ...outfit,
+      name: outfit.name.trim(),
+      occasion: outfit.occasion?.trim() || undefined,
       userId,
     };
     await setDoc(outfitRef, dataToSave, { merge: true });

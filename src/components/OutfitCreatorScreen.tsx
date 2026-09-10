@@ -41,20 +41,33 @@ export function OutfitCreatorScreen({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setError('Por favor escribe un nombre para el outfit');
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      setError('El nombre del outfit es obligatorio y no puede ir vacío.');
       return;
     }
+
+    if (trimmedName.length > 60) {
+      setError(`El nombre del outfit es demasiado largo (máximo 60 caracteres, tiene ${trimmedName.length}).`);
+      return;
+    }
+
     if (selectedGarments.length === 0) {
-      setError('Debes tener al menos una prenda en el outfit');
+      setError('Debes incluir al menos una prenda en el outfit antes de guardarlo.');
+      return;
+    }
+
+    if (occasion && occasion.trim().length > 40) {
+      setError('La ocasión seleccionada es demasiado larga (máximo 40 caracteres).');
       return;
     }
 
     onSaveOutfit({
-      name: name.trim(),
+      name: trimmedName,
       garmentIds: selectedGarments.map((g) => g.id),
       garments: selectedGarments,
-      occasion: occasion || undefined,
+      occasion: occasion?.trim() || undefined,
     });
   };
 
@@ -178,15 +191,21 @@ export function OutfitCreatorScreen({
 
           {/* Name input */}
           <div className="space-y-2">
-            <label
-              htmlFor="input-nombre-outfit"
-              className="block text-xs font-bold text-stone-300 uppercase tracking-wider"
-            >
-              Nombre del outfit *
-            </label>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="input-nombre-outfit"
+                className="block text-xs font-bold text-stone-300 uppercase tracking-wider"
+              >
+                Nombre del outfit *
+              </label>
+              <span className="text-[11px] text-stone-400">
+                {name.length}/60
+              </span>
+            </div>
             <input
               type="text"
               id="input-nombre-outfit"
+              maxLength={60}
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
