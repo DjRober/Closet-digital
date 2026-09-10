@@ -3,7 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
 import { getGarmentRole, GarmentRole } from '../lib/outfitGenerator';
-import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2, Heart, Plus } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2, Heart, Plus, ChevronDown } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
@@ -59,6 +59,7 @@ export function GarmentGallery({
   const selectedCount = selectedGarmentIds.length;
   const [category, setCategory] = useState<GarmentRole | 'all'>('all');
   const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [outfitMenuOpen, setOutfitMenuOpen] = useState(false);
 
   const favoritesCount = garments.filter((g) => g.favorite).length;
 
@@ -110,50 +111,102 @@ export function GarmentGallery({
             </button>
           )}
 
-          {/* Quick Generate Auto Outfit Button */}
-          {onGenerateAutoOutfitClick && (
+          {/* Menú de acciones de outfit (agrupadas) */}
+          <div className="relative">
             <button
               type="button"
-              id="btn-galeria-generar-auto-outfit"
-              onClick={onGenerateAutoOutfitClick}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#d9a6ff] to-[#ff8fd8] hover:from-[#eccbff] hover:to-[#ffa6e2] text-[#150f24] text-xs font-bold shadow-[0_0_15px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+              id="btn-menu-outfit"
+              onClick={() => setOutfitMenuOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={outfitMenuOpen}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                isSelectionMode || outfitMenuOpen
+                  ? '!bg-[#d9a6ff] text-[#150f24] shadow-[0_0_15px_rgba(217,166,255,0.4)]'
+                  : 'glass-pill text-stone-200 hover:text-white'
+              }`}
             >
-              <Wand2 className="w-3.5 h-3.5" />
-              <span>Generar outfit</span>
+              <Sparkles className={`w-3.5 h-3.5 ${isSelectionMode || outfitMenuOpen ? '' : 'text-amber-300'}`} />
+              <span>Outfits</span>
+              {selectedCount > 0 && (
+                <span className="ml-0.5 text-[10px] px-1.5 rounded-full bg-black/15 font-bold">{selectedCount}</span>
+              )}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${outfitMenuOpen ? 'rotate-180' : ''}`} />
             </button>
-          )}
 
-          {/* Toggle Selection / Combinar mode button */}
-          <button
-            type="button"
-            id="btn-modo-combinar-outfit"
-            onClick={onToggleSelectionMode}
-            className={`glass-pill inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium cursor-pointer ${
-              isSelectionMode
-                ? '!bg-[#d9a6ff] !text-[#150f24] !font-bold shadow-[0_0_15px_rgba(217,166,255,0.5)]'
-                : 'text-stone-300 hover:text-white'
-            }`}
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            <span>{isSelectionMode ? 'Modo selección activo' : 'Seleccionar prendas'}</span>
-          </button>
+            {outfitMenuOpen && (
+              <>
+                {/* Capa para cerrar al hacer clic fuera */}
+                <div className="fixed inset-0 z-40" onClick={() => setOutfitMenuOpen(false)} />
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-60 glass-card z-50 p-1.5 animate-fade-in"
+                >
+                  {onGenerateAutoOutfitClick && (
+                    <button
+                      type="button"
+                      id="btn-galeria-generar-auto-outfit"
+                      role="menuitem"
+                      onClick={() => {
+                        setOutfitMenuOpen(false);
+                        onGenerateAutoOutfitClick();
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left text-xs text-stone-200 hover:bg-white/[0.08] transition-colors cursor-pointer"
+                    >
+                      <span className="w-8 h-8 rounded-lg bg-[#d9a6ff]/20 text-[#d9a6ff] flex items-center justify-center shrink-0">
+                        <Wand2 className="w-4 h-4" />
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-white">Generar outfit automático</span>
+                        <span className="block text-[11px] text-stone-400">Combinación por reglas de estilo</span>
+                      </span>
+                    </button>
+                  )}
 
-          {/* Primary "Crear outfit" button in header */}
-          <button
-            type="button"
-            id="btn-crear-outfit"
-            onClick={onCreateOutfitClick}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all active:scale-[0.98] cursor-pointer ${
-              selectedCount > 0
-                ? 'bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] shadow-[0_0_20px_rgba(217,166,255,0.5)]'
-                : 'bg-white/[0.1] hover:bg-white/[0.16] text-white border border-white/15'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>
-              {selectedCount > 0 ? `Crear outfit (${selectedCount})` : 'Crear outfit'}
-            </span>
-          </button>
+                  <button
+                    type="button"
+                    id="btn-modo-combinar-outfit"
+                    role="menuitem"
+                    onClick={() => {
+                      setOutfitMenuOpen(false);
+                      onToggleSelectionMode();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left text-xs text-stone-200 hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  >
+                    <span className="w-8 h-8 rounded-lg bg-white/[0.08] text-stone-200 flex items-center justify-center shrink-0">
+                      <CheckSquare className="w-4 h-4" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-white">
+                        {isSelectionMode ? 'Salir del modo selección' : 'Seleccionar prendas'}
+                      </span>
+                      <span className="block text-[11px] text-stone-400">Elige piezas para combinar</span>
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="btn-crear-outfit"
+                    role="menuitem"
+                    onClick={() => {
+                      setOutfitMenuOpen(false);
+                      onCreateOutfitClick();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left text-xs text-stone-200 hover:bg-white/[0.08] transition-colors cursor-pointer"
+                  >
+                    <span className="w-8 h-8 rounded-lg bg-white/[0.08] text-amber-300 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-white">
+                        {selectedCount > 0 ? `Crear outfit (${selectedCount})` : 'Crear outfit manual'}
+                      </span>
+                      <span className="block text-[11px] text-stone-400">Arma y guarda una combinación</span>
+                    </span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
