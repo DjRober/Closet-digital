@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Sun, Moon, Layers, Sparkles, Cloud, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Sparkles, Cloud, LogIn, LogOut, User as UserIcon, Home, Layers, Sun, Moon } from 'lucide-react';
 import { User } from 'firebase/auth';
 
 interface HeaderProps {
   garmentCount: number;
   outfitCount?: number;
-  activeTab?: 'armario' | 'outfits';
-  onTabChange?: (tab: 'armario' | 'outfits') => void;
+  activeTab?: 'landing' | 'armario' | 'outfits';
+  onTabChange?: (tab: 'landing' | 'armario' | 'outfits') => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   user: User | null;
@@ -18,7 +18,7 @@ interface HeaderProps {
 export function Header({
   garmentCount,
   outfitCount = 0,
-  activeTab = 'armario',
+  activeTab = 'landing',
   onTabChange,
   theme,
   onToggleTheme,
@@ -30,80 +30,106 @@ export function Header({
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
-    <header className="border-b border-stone-200/80 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 sticky top-0 z-30 backdrop-blur-xs transition-colors">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
-        {/* Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-stone-900 text-stone-100 dark:bg-stone-800 dark:border dark:border-stone-700 flex items-center justify-center shadow-xs">
-            {/* Minimalist hanger brand mark */}
+    <header className="sticky top-0 z-40 bg-white/[0.06] backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_1px_0_rgba(255,255,255,0.06)_inset] transition-all">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        {/* Brand / Logo */}
+        <button
+          type="button"
+          onClick={() => onTabChange && onTabChange('landing')}
+          className="flex items-center space-x-3 text-left group cursor-pointer"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/25 to-[#ff8fd8]/15 border border-[#d9a6ff]/40 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)] transition-transform group-hover:scale-105">
+            {/* Minimalist hanger mark */}
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor"
+              stroke="#d9a6ff"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-5 h-5 text-stone-200"
+              className="w-5 h-5 drop-shadow-[0_0_8px_rgba(217,166,255,0.6)]"
             >
               <path d="M12 4a2 2 0 0 1 2 2c0 1.5-1.5 2-2 3l-8 6a1 1 0 0 0 .6 1.7h18.8a1 1 0 0 0 .6-1.7L14 9" />
             </svg>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+              <span className="text-lg font-bold tracking-tight text-white group-hover:text-[#d9a6ff] transition-colors font-['Outfit']">
                 Armario Digital
-              </h1>
+              </span>
               <span
-                className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60"
+                className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/[0.08] text-[#d9a6ff] border border-white/12 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]"
                 title="Conectado a Firebase Firestore"
               >
-                <Cloud className={`w-3 h-3 ${isSyncing ? 'animate-pulse text-amber-500' : ''}`} />
-                <span>Firebase</span>
+                <Cloud className={`w-3 h-3 ${isSyncing ? 'animate-pulse text-[#d9a6ff]' : ''}`} />
+                <span>Nube</span>
               </span>
             </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 hidden sm:block">
-              Organizador personal de prendas y vestuario
+            <p className="text-[11px] text-stone-400 hidden sm:block">
+              Tu clóset organizado con estilo
             </p>
           </div>
-        </div>
+        </button>
 
-        {/* Navigation Tabs and Controls */}
+        {/* Navigation Tabs and User Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           {onTabChange && (
             <nav
               id="nav-secciones-header"
-              className="p-1 rounded-xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/80 flex items-center gap-1"
+              className="p-1 rounded-full bg-white/[0.06] border border-white/[0.12] backdrop-blur-md flex items-center gap-1 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]"
             >
+              {/* Tab: Inicio (Landing) */}
+              <button
+                type="button"
+                id="nav-tab-landing"
+                onClick={() => onTabChange('landing')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'landing'
+                    ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_12px_rgba(217,166,255,0.45)]'
+                    : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
+                }`}
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Inicio</span>
+              </button>
+
+              {/* Tab: Mi Armario */}
               <button
                 type="button"
                 id="nav-tab-armario"
                 onClick={() => onTabChange('armario')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'armario'
-                    ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                    ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_12px_rgba(217,166,255,0.45)]'
+                    : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>Armario</span>
-                <span className="ml-0.5 text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-bold">
+                <span>Mi Armario</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activeTab === 'armario' ? 'bg-[#150f24]/20 text-[#150f24]' : 'bg-white/10 text-stone-300'
+                }`}>
                   {garmentCount}
                 </span>
               </button>
 
+              {/* Tab: Mis Outfits */}
               <button
                 type="button"
                 id="nav-tab-outfits"
                 onClick={() => onTabChange('outfits')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'outfits'
-                    ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                    ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_12px_rgba(217,166,255,0.45)]'
+                    : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Mis outfits</span>
-                <span className="ml-0.5 text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Mis Outfits</span>
+                <span className="sm:hidden">Outfits</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  activeTab === 'outfits' ? 'bg-[#150f24]/20 text-[#150f24]' : 'bg-white/10 text-stone-300'
+                }`}>
                   {outfitCount}
                 </span>
               </button>
@@ -117,18 +143,20 @@ export function Header({
                 type="button"
                 id="btn-user-profile"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all cursor-pointer shadow-xs"
+                className="glass-pill flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 text-stone-200 hover:text-white cursor-pointer"
                 title={user.email || 'Usuario'}
               >
                 {user.photoURL ? (
                   <img
                     src={user.photoURL}
                     alt={user.displayName || 'Usuario'}
-                    className="w-6 h-6 rounded-full object-cover"
+                    className="w-6 h-6 rounded-full object-cover border border-white/20"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <UserIcon className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                  <div className="w-6 h-6 rounded-full bg-[#d9a6ff]/20 text-[#d9a6ff] flex items-center justify-center font-bold text-xs">
+                    {user.email ? user.email[0].toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
+                  </div>
                 )}
                 <span className="text-xs font-medium hidden md:inline max-w-[100px] truncate">
                   {user.displayName || user.email?.split('@')[0]}
@@ -138,21 +166,21 @@ export function Header({
               {showUserMenu && (
                 <div
                   id="user-dropdown-menu"
-                  className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl p-2 z-50 animate-fade-in"
+                  className="absolute right-0 mt-2 w-60 rounded-2xl bg-[#1c152e]/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_1px_0_0_rgba(255,255,255,0.2)_inset] p-2 z-50 animate-fade-in text-stone-100"
                 >
-                  <div className="p-2.5 border-b border-stone-100 dark:border-stone-800">
-                    <p className="text-xs font-semibold text-stone-900 dark:text-stone-100 truncate">
+                  <div className="p-3 border-b border-white/10">
+                    <p className="text-xs font-semibold text-white truncate">
                       {user.displayName || 'Usuario'}
                     </p>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                    <p className="text-[11px] text-stone-400 truncate">
                       {user.email}
                     </p>
-                    <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800/80 space-y-1">
-                      <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                        <Cloud className="w-3 h-3 shrink-0" />
-                        <span>Base de datos personal activa</span>
+                    <div className="mt-2.5 pt-2 border-t border-white/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-medium">
+                        <Cloud className="w-3.5 h-3.5 shrink-0" />
+                        <span>Armario personal activo</span>
                       </div>
-                      <p className="text-[10px] text-stone-400 dark:text-stone-500">
+                      <p className="text-[10px] text-stone-400">
                         Prendas y outfits privados para tu cuenta
                       </p>
                     </div>
@@ -164,7 +192,7 @@ export function Header({
                       setShowUserMenu(false);
                       onSignOut();
                     }}
-                    className="w-full mt-1.5 flex items-center gap-2 p-2 rounded-xl text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+                    className="w-full mt-1.5 flex items-center gap-2 p-2 rounded-xl text-xs text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Cerrar sesión</span>
@@ -177,8 +205,8 @@ export function Header({
               type="button"
               id="btn-abrir-auth-modal"
               onClick={onSignIn}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-medium shadow-xs transition-all cursor-pointer"
-              title="Inicia sesión o regístrate con correo o Google"
+              className="px-3.5 py-1.5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_15px_rgba(217,166,255,0.35)] transition-all cursor-pointer flex items-center gap-1.5"
+              title="Inicia sesión o regístrate"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Acceder / Registro</span>
@@ -193,12 +221,12 @@ export function Header({
             onClick={onToggleTheme}
             title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            className="p-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 transition-all cursor-pointer flex items-center justify-center shadow-xs"
+            className="glass-pill p-2 text-stone-300 hover:text-white cursor-pointer flex items-center justify-center"
           >
             {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-amber-300" />
             ) : (
-              <Moon className="w-4 h-4 text-stone-700" />
+              <Moon className="w-4 h-4 text-[#d9a6ff]" />
             )}
           </button>
         </div>

@@ -189,31 +189,31 @@ export function GarmentForm({
   return (
     <div
       id="registro-prenda-container"
-      className={`bg-white dark:bg-stone-900 rounded-2xl border shadow-sm p-6 sm:p-7 transition-all ${
+      className={`glass-panel p-6 sm:p-8 transition-all ${
         editingGarment
-          ? 'border-stone-900/40 dark:border-stone-100/40 ring-2 ring-stone-900/10 dark:ring-stone-100/10'
-          : 'border-stone-200/90 dark:border-stone-800'
+          ? '!border-[#d9a6ff] ring-2 ring-[#d9a6ff]/50 shadow-[0_0_30px_rgba(217,166,255,0.25)]'
+          : 'border-white/15'
       }`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-stone-100 dark:border-stone-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-6 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
           {editingGarment && (
-            <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60">
+            <div className="p-2 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40">
               <Edit3 className="w-5 h-5" />
             </div>
           )}
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
+              <h2 className="text-xl font-bold text-white tracking-tight font-['Outfit']">
                 {editingGarment ? 'Editar prenda' : 'Registrar nueva prenda'}
               </h2>
               {editingGarment && (
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
                   Modo edición
                 </span>
               )}
             </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
+            <p className="text-xs text-stone-400">
               {editingGarment
                 ? 'Modifica el tipo, color o ícono y guarda los cambios'
                 : 'Añade los datos de la prenda para guardarla en tu armario'}
@@ -227,7 +227,7 @@ export function GarmentForm({
               type="button"
               id="btn-cancelar-edicion-top"
               onClick={handleCancel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 text-xs font-medium transition-all cursor-pointer"
+              className="glass-pill inline-flex items-center gap-1.5 px-3 py-1.5 text-stone-300 hover:text-white text-xs font-medium cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
               <span>Cancelar edición</span>
@@ -237,7 +237,7 @@ export function GarmentForm({
           {showSavedFeedback && (
             <div
               id="guardado-feedback-badge"
-              className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-full animate-fade-in"
+              className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-semibold rounded-full animate-fade-in shadow-[0_0_12px_rgba(110,231,200,0.3)]"
             >
               <Check className="w-3.5 h-3.5" />
               <span>{feedbackMessage}</span>
@@ -554,21 +554,21 @@ export function GarmentForm({
             </div>
 
             {/* Botón de Guardar / Actualizar */}
-            <div className="pt-2">
+            <div className="pt-3">
               {editingGarment ? (
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
                     id="btn-cancelar-edicion"
                     onClick={handleCancel}
-                    className="w-1/3 py-3 px-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-sm font-medium transition-all hover:shadow-xs active:scale-[0.99] cursor-pointer text-center"
+                    className="glass-pill w-1/3 py-3 px-4 text-white text-xs font-semibold cursor-pointer text-center"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     id="btn-guardar-prenda"
-                    className="flex-1 py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3 px-5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-sm font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Check className="w-4 h-4" />
                     <span>Guardar cambios</span>
@@ -578,13 +578,13 @@ export function GarmentForm({
                 <button
                   type="submit"
                   id="btn-guardar-prenda"
-                  className="w-full py-3 px-5 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 px-6 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-sm font-bold shadow-[0_4px_24px_rgba(0,0,0,0.3),0_0_25px_rgba(217,166,255,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0.5"
                 >
                   <Check className="w-4 h-4" />
                   <span>Guardar prenda en el armario</span>
                 </button>
               )}
-              <p className="text-[11px] text-stone-400 dark:text-stone-500 text-center mt-2">
+              <p className="text-[11px] text-stone-400 text-center mt-2.5">
                 {editingGarment
                   ? 'Los cambios se actualizarán inmediatamente en la tarjeta del armario.'
                   : 'La prenda se agregará inmediatamente a la galería de tu armario aquí abajo.'}

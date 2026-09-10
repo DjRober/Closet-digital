@@ -6,6 +6,8 @@ import { OutfitsSection } from './components/OutfitsSection';
 import { OutfitCreatorScreen } from './components/OutfitCreatorScreen';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { AuthModal } from './components/AuthModal';
+import { LandingPage } from './components/LandingPage';
+import { ShaderBackground } from './components/ShaderBackground';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 import { useAuth } from './context/AuthContext';
@@ -55,7 +57,7 @@ export default function App() {
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'wardrobe' | 'outfit-creator'>('wardrobe');
-  const [activeTab, setActiveTab] = useState<'armario' | 'outfits'>('armario');
+  const [activeTab, setActiveTab] = useState<'landing' | 'armario' | 'outfits'>('landing');
 
   // Garment selection for outfit combination
   const [selectedGarmentIds, setSelectedGarmentIds] = useState<string[]>([]);
@@ -525,7 +527,10 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex flex-col transition-colors duration-200">
+    <div className="relative min-h-screen text-stone-100 flex flex-col selection:bg-[#d9a6ff]/30 selection:text-white">
+      {/* Dynamic ambient WebGL light shader background */}
+      <ShaderBackground />
+
       {/* Header with Navigation and User Auth */}
       <Header
         garmentCount={garments.length}
@@ -534,9 +539,11 @@ export default function App() {
         onTabChange={(tab) => {
           setActiveTab(tab);
           setCurrentScreen('wardrobe');
-          if (tab === 'outfits' && outfitsSectionRef.current) {
-            outfitsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } else if (tab === 'armario' && formSectionRef.current) {
+          if (tab === 'outfits') {
+            setTimeout(() => {
+              outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          } else if (tab === 'armario') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
@@ -550,17 +557,17 @@ export default function App() {
 
       {/* User Status Bar when Logged In */}
       {user && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 w-full">
-          <div className="p-2.5 px-3.5 rounded-xl bg-stone-100/80 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 text-xs flex items-center justify-between gap-2 shadow-2xs">
-            <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400">
-              <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 w-full relative z-10">
+          <div className="p-3 px-4 rounded-2xl glass-panel text-xs flex items-center justify-between gap-2 border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center gap-2 text-stone-300">
+              <Lock className="w-3.5 h-3.5 text-[#d9a6ff]" />
               <span>
-                Sesión activa como <strong className="text-stone-900 dark:text-stone-200">{user.displayName || user.email}</strong>. Tus datos son privados y exclusivos de tu cuenta.
+                Sesión activa como <strong className="text-white font-semibold">{user.displayName || user.email}</strong>. Tus datos son privados y exclusivos de tu cuenta.
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+            <div className="flex items-center gap-1.5 text-[11px] text-[#d9a6ff] font-medium">
               <Cloud className={`w-3.5 h-3.5 ${isSyncing ? 'animate-pulse' : ''}`} />
-              <span className="hidden sm:inline">{isSyncing ? 'Sincronizando...' : 'Conectado a tu base de datos'}</span>
+              <span className="hidden sm:inline">{isSyncing ? 'Sincronizando...' : 'Conectado a Firestore'}</span>
             </div>
           </div>
         </div>
@@ -568,15 +575,15 @@ export default function App() {
 
       {/* Auth Error Banner if any */}
       {authError && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-2 shadow-xs">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full relative z-10">
+          <div className="p-3 rounded-2xl bg-rose-950/80 backdrop-blur-md border border-rose-500/40 text-rose-200 text-xs flex items-center justify-between gap-2 shadow-lg">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>{authError}</span>
             </div>
             <button
               onClick={clearAuthError}
-              className="p-1 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg cursor-pointer"
+              className="p-1 hover:bg-rose-900/60 rounded-lg cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -584,22 +591,22 @@ export default function App() {
         </div>
       )}
 
-      {/* Firebase Cloud Sync Banner for Guests */}
-      {!user && !authLoading && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full">
+      {/* Firebase Cloud Sync Banner for Guests (Only on Armario/Outfits tabs) */}
+      {!user && !authLoading && activeTab !== 'landing' && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4 w-full relative z-10">
           <div
             id="banner-firebase-info"
-            className="p-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+            className="p-4 sm:p-5 rounded-2xl glass-panel flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-white/15"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center shrink-0">
-                <Cloud className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.08] border border-white/15 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(217,166,255,0.2)]">
+                <Cloud className="w-5 h-5 text-[#d9a6ff]" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                <p className="text-sm font-bold text-white font-['Outfit']">
                   Crea tu cuenta para tener tu armario privado
                 </p>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
+                <p className="text-xs text-stone-300">
                   Cada usuario tiene su propia colección de ropa y outfits aislada en Firestore.
                 </p>
               </div>
@@ -610,7 +617,7 @@ export default function App() {
                 type="button"
                 id="btn-banner-registro-email"
                 onClick={() => handleOpenAuthModal('signup')}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 <span>Registrarse con correo</span>
@@ -620,7 +627,7 @@ export default function App() {
                 type="button"
                 id="btn-banner-login-email"
                 onClick={() => handleOpenAuthModal('signin')}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-medium shadow-2xs transition-all cursor-pointer"
+                className="glass-pill inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-stone-200 text-xs font-semibold cursor-pointer"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Iniciar sesión</span>
@@ -634,71 +641,93 @@ export default function App() {
       {toastMessage && (
         <div
           id="toast-notification"
-          className="fixed top-20 right-5 z-50 px-4 py-3 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-medium shadow-lg flex items-center gap-2 animate-fade-in border border-stone-800 dark:border-stone-300"
+          className="fixed top-20 right-5 z-50 px-4 py-3 rounded-2xl glass-panel !bg-[#1c152e]/95 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-fade-in border border-[#d9a6ff]/40"
         >
-          <Check className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+          <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
-        {currentScreen === 'outfit-creator' ? (
-          /* Pantalla: Ver prendas juntas y guardar outfit */
-          <OutfitCreatorScreen
-            selectedGarments={selectedGarmentsList}
-            onSaveOutfit={handleSaveOutfit}
-            onCancel={() => setCurrentScreen('wardrobe')}
-            onRemoveGarment={handleRemoveGarmentFromOutfitScreen}
-          />
-        ) : (
-          /* Pantalla Principal: Armario (Registro, Edición, Galería) + Mis Outfits */
-          <>
-            {/* Formulario de registro y edición */}
-            <div ref={formSectionRef} className="scroll-mt-6">
-              <GarmentForm
-                onAddGarment={handleAddGarment}
-                editingGarment={editingGarment}
-                onUpdateGarment={handleUpdateGarment}
-                onCancelEdit={handleCancelEdit}
-              />
-            </div>
+      {activeTab === 'landing' ? (
+        /* Landing Page View */
+        <LandingPage
+          onEnterApp={() => {
+            setActiveTab('armario');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onSignUp={() => handleOpenAuthModal('signup')}
+          onOpenOutfitCreator={() => {
+            setActiveTab('armario');
+            setIsSelectionMode(true);
+            setTimeout(() => {
+              gallerySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 60);
+          }}
+          totalGarments={garments.length}
+          totalOutfits={outfits.length}
+          userEmail={user?.email}
+          userName={user?.displayName}
+        />
+      ) : (
+        <main className="relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
+          {currentScreen === 'outfit-creator' ? (
+            /* Pantalla: Ver prendas juntas y guardar outfit */
+            <OutfitCreatorScreen
+              selectedGarments={selectedGarmentsList}
+              onSaveOutfit={handleSaveOutfit}
+              onCancel={() => setCurrentScreen('wardrobe')}
+              onRemoveGarment={handleRemoveGarmentFromOutfitScreen}
+            />
+          ) : (
+            /* Pantalla Principal: Armario (Registro, Edición, Galería) + Mis Outfits */
+            <>
+              {/* Formulario de registro y edición */}
+              <div ref={formSectionRef} className="scroll-mt-6">
+                <GarmentForm
+                  onAddGarment={handleAddGarment}
+                  editingGarment={editingGarment}
+                  onUpdateGarment={handleUpdateGarment}
+                  onCancelEdit={handleCancelEdit}
+                />
+              </div>
 
-            {/* Galería de prendas en el armario */}
-            <div ref={gallerySectionRef} className="scroll-mt-6">
-              <GarmentGallery
-                garments={garments}
-                editingGarmentId={editingGarment?.id}
-                selectedGarmentIds={selectedGarmentIds}
-                isSelectionMode={isSelectionMode}
-                isUserLoggedIn={Boolean(user)}
-                onToggleSelectionMode={handleToggleSelectionMode}
-                onSelectGarment={handleSelectGarment}
-                onToggleSelectGarment={handleToggleSelectGarment}
-                onClearSelection={handleClearSelection}
-                onCreateOutfitClick={handleOpenOutfitCreator}
-                onDeleteRequest={handleRequestDelete}
-                onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
-              />
-            </div>
+              {/* Galería de prendas en el armario */}
+              <div ref={gallerySectionRef} className="scroll-mt-6">
+                <GarmentGallery
+                  garments={garments}
+                  editingGarmentId={editingGarment?.id}
+                  selectedGarmentIds={selectedGarmentIds}
+                  isSelectionMode={isSelectionMode}
+                  isUserLoggedIn={Boolean(user)}
+                  onToggleSelectionMode={handleToggleSelectionMode}
+                  onSelectGarment={handleSelectGarment}
+                  onToggleSelectGarment={handleToggleSelectGarment}
+                  onClearSelection={handleClearSelection}
+                  onCreateOutfitClick={handleOpenOutfitCreator}
+                  onDeleteRequest={handleRequestDelete}
+                  onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
+                />
+              </div>
 
-            {/* Sección "Mis outfits" */}
-            <div ref={outfitsSectionRef} className="scroll-mt-6">
-              <OutfitsSection
-                outfits={outfits}
-                onDeleteOutfit={handleDeleteOutfit}
-                onCreateOutfitClick={() => {
-                  setIsSelectionMode(true);
-                  if (gallerySectionRef.current) {
-                    gallerySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                  showToast('Selecciona las prendas en tu armario para combinarlas');
-                }}
-              />
-            </div>
-          </>
-        )}
-      </main>
+              {/* Sección "Mis outfits" */}
+              <div ref={outfitsSectionRef} className="scroll-mt-6">
+                <OutfitsSection
+                  outfits={outfits}
+                  onDeleteOutfit={handleDeleteOutfit}
+                  onCreateOutfitClick={() => {
+                    setIsSelectionMode(true);
+                    if (gallerySectionRef.current) {
+                      gallerySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    showToast('Selecciona las prendas en tu armario para combinarlas');
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </main>
+      )}
 
       {/* Auth Modal for Email/Password Registration & Login */}
       <AuthModal
@@ -716,14 +745,14 @@ export default function App() {
       />
 
       {/* Minimal Footer */}
-      <footer className="border-t border-stone-200/60 dark:border-stone-800/80 py-6 text-center text-xs text-stone-400 dark:text-stone-500">
-        <div className="flex items-center justify-center gap-1.5 mb-1">
-          <Cloud className="w-3.5 h-3.5 text-amber-500" />
-          <span className="font-medium text-stone-600 dark:text-stone-400">Armario Digital</span>
+      <footer className="relative z-10 border-t border-white/[0.08] py-8 text-center text-xs text-stone-400 bg-white/[0.02] backdrop-blur-md">
+        <div className="flex items-center justify-center gap-1.5 mb-1.5">
+          <Cloud className="w-3.5 h-3.5 text-[#d9a6ff]" />
+          <span className="font-semibold text-white">Armario Digital</span>
           <span>•</span>
           <span>Colecciones privadas por usuario en Firebase</span>
         </div>
-        <p>Cada usuario cuenta con su propia colección independiente de prendas y outfits</p>
+        <p className="text-stone-400">Cada usuario cuenta con su propia colección independiente de prendas y outfits</p>
       </footer>
     </div>
   );

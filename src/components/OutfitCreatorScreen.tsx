@@ -61,21 +61,21 @@ export function OutfitCreatorScreen({
   return (
     <div id="pantalla-crear-outfit" className="space-y-8 animate-fade-in">
       {/* Top Navigation Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-200/80 dark:border-stone-800">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
         <button
           type="button"
           id="btn-volver-armario"
           onClick={onCancel}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 text-xs font-medium transition-all shadow-2xs hover:shadow-xs active:scale-[0.98] cursor-pointer"
+          className="glass-pill inline-flex items-center gap-2 px-4 py-2 text-stone-200 hover:text-white text-xs font-semibold cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Volver al armario</span>
         </button>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>Nueva combinación</span>
-          <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-semibold">
+        <div className="flex items-center gap-2 text-xs font-medium text-stone-400">
+          <Sparkles className="w-3.5 h-3.5 text-[#d9a6ff]" />
+          <span className="text-white">Nueva combinación</span>
+          <span className="px-2.5 py-1 rounded-full bg-[#d9a6ff]/20 text-[#d9a6ff] border border-[#d9a6ff]/30 font-bold">
             {selectedGarments.length} {selectedGarments.length === 1 ? 'prenda' : 'prendas'}
           </span>
         </div>
@@ -84,13 +84,13 @@ export function OutfitCreatorScreen({
       {/* Main Container */}
       <form onSubmit={handleSave} className="space-y-8">
         {/* Visual composition of garments together ("las veo juntas en una nueva pantalla") */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-sm p-6 sm:p-7">
-          <div className="flex items-center justify-between mb-5 pb-3 border-b border-stone-100 dark:border-stone-800">
+        <div className="glass-panel p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/[0.08]">
             <div>
-              <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
+              <h2 className="text-xl font-bold text-white tracking-tight font-['Outfit']">
                 Prendas combinadas en este outfit
               </h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              <p className="text-xs text-stone-400 mt-1">
                 Así lucen juntas las piezas que seleccionaste de tu armario
               </p>
             </div>
@@ -98,7 +98,7 @@ export function OutfitCreatorScreen({
               {selectedGarments.map((g) => (
                 <span
                   key={`dot-${g.id}`}
-                  className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-700 shadow-2xs"
+                  className="w-3.5 h-3.5 rounded-full border border-white/30 shadow-xs"
                   style={{ backgroundColor: g.colorHex || '#57534e' }}
                   title={`${g.type} - ${g.color}`}
                 />
@@ -107,21 +107,21 @@ export function OutfitCreatorScreen({
           </div>
 
           {selectedGarments.length === 0 ? (
-            <div className="p-8 text-center border-2 border-dashed border-stone-200 dark:border-stone-800 rounded-xl">
-              <p className="text-sm text-stone-500 dark:text-stone-400">
+            <div className="p-8 text-center border-2 border-dashed border-white/20 rounded-2xl bg-white/[0.02]">
+              <p className="text-sm text-stone-400">
                 No hay prendas seleccionadas. Vuelve al armario para elegir prendas.
               </p>
             </div>
           ) : (
             <div
               id="grid-prendas-juntas"
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
             >
               {selectedGarments.map((garment) => (
                 <div
                   key={garment.id}
                   id={`outfit-item-${garment.id}`}
-                  className="group relative bg-stone-50 dark:bg-stone-950/60 rounded-xl border border-stone-200/80 dark:border-stone-800 p-3.5 flex flex-col items-center text-center shadow-2xs hover:shadow-xs transition-all"
+                  className="group relative glass-card p-4 flex flex-col items-center text-center transition-all hover:border-white/25"
                 >
                   {/* Remove piece button */}
                   <button
@@ -129,31 +129,31 @@ export function OutfitCreatorScreen({
                     onClick={() => onRemoveGarment(garment.id)}
                     title={`Quitar ${garment.type} de este outfit`}
                     aria-label={`Quitar ${garment.type}`}
-                    className="absolute top-2 right-2 p-1 rounded-full bg-white dark:bg-stone-800 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 border border-stone-200 dark:border-stone-700 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer opacity-80 group-hover:opacity-100"
+                    className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-[#150f24]/80 text-stone-400 hover:text-rose-400 border border-white/15 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer opacity-80 group-hover:opacity-100"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
 
                   {/* Garment Visual */}
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 my-2 flex items-center justify-center">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 my-2 flex items-center justify-center">
                     <GarmentVisual
                       imageUrl={garment.imageUrl}
                       iconKey={garment.iconKey}
                       colorHex={garment.colorHex}
                       colorName={garment.color}
                       size="md"
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-xl"
                     />
                   </div>
 
                   {/* Garment Details */}
-                  <div className="w-full mt-2 pt-2 border-t border-stone-200/60 dark:border-stone-800/80">
-                    <p className="text-xs font-semibold text-stone-900 dark:text-stone-100 capitalize truncate">
+                  <div className="w-full mt-3 pt-3 border-t border-white/[0.08]">
+                    <p className="text-xs font-semibold text-white capitalize truncate font-['Outfit']">
                       {garment.type}
                     </p>
-                    <div className="flex items-center justify-center gap-1.5 mt-1 text-[11px] text-stone-500 dark:text-stone-400">
+                    <div className="flex items-center justify-center gap-1.5 mt-1 text-[11px] text-stone-400">
                       <span
-                        className="w-2 h-2 rounded-full border border-stone-300 dark:border-stone-600"
+                        className="w-2 h-2 rounded-full border border-white/30"
                         style={{ backgroundColor: garment.colorHex || '#57534e' }}
                       />
                       <span className="truncate">{garment.color}</span>
@@ -166,21 +166,21 @@ export function OutfitCreatorScreen({
         </div>
 
         {/* Outfit Details Form */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-sm p-6 sm:p-7 space-y-6">
-          <div className="pb-3 border-b border-stone-100 dark:border-stone-800">
-            <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100 tracking-tight">
+        <div className="glass-panel p-6 sm:p-8 space-y-6">
+          <div className="pb-4 border-b border-white/[0.08]">
+            <h3 className="text-xl font-bold text-white tracking-tight font-['Outfit']">
               Detalles del outfit
             </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+            <p className="text-xs text-stone-400 mt-1">
               Asigna un nombre y ocasión para identificarlo fácilmente en tu armario
             </p>
           </div>
 
           {/* Name input */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label
               htmlFor="input-nombre-outfit"
-              className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider"
+              className="block text-xs font-bold text-stone-300 uppercase tracking-wider"
             >
               Nombre del outfit *
             </label>
@@ -193,14 +193,14 @@ export function OutfitCreatorScreen({
                 if (error) setError(null);
               }}
               placeholder="Ej. Outfit Casual de Viernes"
-              className="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800/50 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 dark:focus:ring-stone-100 focus:bg-white dark:focus:bg-stone-800 transition-all"
+              className="glass-input w-full px-4 py-2.5 text-sm placeholder-stone-400"
             />
-            {error && <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{error}</p>}
+            {error && <p className="text-xs text-rose-400 font-medium">{error}</p>}
           </div>
 
           {/* Occasion / Tag Presets */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-stone-300 uppercase tracking-wider">
               Ocasión o estilo
             </label>
             <div className="flex flex-wrap gap-2">
@@ -209,10 +209,10 @@ export function OutfitCreatorScreen({
                   key={tag}
                   type="button"
                   onClick={() => setOccasion(tag)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`glass-pill inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium cursor-pointer ${
                     occasion === tag
-                      ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-xs'
-                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      ? '!bg-[#d9a6ff] !text-[#150f24] !font-bold shadow-[0_0_12px_rgba(217,166,255,0.4)]'
+                      : 'text-stone-300 hover:text-white'
                   }`}
                 >
                   <Tag className="w-3 h-3" />
@@ -223,12 +223,12 @@ export function OutfitCreatorScreen({
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center gap-3 border-t border-stone-100 dark:border-stone-800">
+          <div className="pt-4 flex flex-col sm:flex-row items-center gap-3 border-t border-white/[0.08]">
             <button
               type="button"
               id="btn-cancelar-outfit"
               onClick={onCancel}
-              className="w-full sm:w-1/3 py-3 px-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-sm font-medium transition-all active:scale-[0.98] cursor-pointer text-center"
+              className="glass-pill w-full sm:w-1/3 py-3 px-4 text-white text-xs font-semibold cursor-pointer text-center"
             >
               Cancelar
             </button>
@@ -236,7 +236,7 @@ export function OutfitCreatorScreen({
               type="submit"
               id="btn-guardar-outfit"
               disabled={selectedGarments.length === 0}
-              className="w-full sm:w-2/3 py-3 px-6 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-900 text-white text-sm font-medium tracking-wide shadow-sm hover:shadow active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-2/3 py-3 px-6 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-sm font-bold shadow-[0_0_25px_rgba(217,166,255,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
               <span>Guardar outfit en Mis outfits</span>

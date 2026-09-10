@@ -49,16 +49,16 @@ export function GarmentCard({
             : 'Toca para seleccionar esta prenda para tu outfit'
           : 'Toca para editar esta prenda'
       }
-      className={`group relative bg-white dark:bg-stone-900 rounded-2xl border shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col cursor-pointer ${
+      className={`group relative glass-card transition-all duration-200 overflow-hidden flex flex-col cursor-pointer ${
         isSelected
-          ? 'border-stone-900 dark:border-stone-100 ring-2 ring-stone-900 dark:ring-stone-100 shadow-md bg-stone-50/60 dark:bg-stone-800/40'
+          ? '!border-[#d9a6ff] ring-2 ring-[#d9a6ff]/70 shadow-[0_0_25px_rgba(217,166,255,0.35)] !bg-white/[0.14]'
           : isEditing
-          ? 'border-amber-500 ring-2 ring-amber-500/80 shadow-md'
-          : 'border-stone-200/90 dark:border-stone-800 hover:border-stone-400 dark:hover:border-stone-600 hover:-translate-y-0.5'
+          ? '!border-amber-400 ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+          : 'border-white/10 hover:border-white/25 hover:-translate-y-1'
       }`}
     >
       {/* Visual Area (Photo or Icon) */}
-      <div className="relative aspect-4/3 w-full bg-stone-100/70 dark:bg-stone-950/60 overflow-hidden flex items-center justify-center p-3 border-b border-stone-100 dark:border-stone-800">
+      <div className="relative aspect-4/3 w-full bg-white/[0.04] backdrop-blur-md overflow-hidden flex items-center justify-center p-3 border-b border-white/[0.08]">
         <GarmentVisual
           imageUrl={garment.imageUrl}
           iconKey={garment.iconKey}
@@ -78,15 +78,15 @@ export function GarmentCard({
           }}
           title="Eliminar prenda"
           aria-label={`Eliminar ${garment.type}`}
-          className="absolute top-2.5 left-2.5 p-2 rounded-full bg-white/95 dark:bg-stone-800/95 backdrop-blur-xs border border-stone-200/80 dark:border-stone-700 text-stone-500 dark:text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/70 hover:border-rose-300 dark:hover:border-rose-800 shadow-xs hover:shadow hover:scale-105 active:scale-95 transition-all cursor-pointer z-10"
+          className="absolute top-2.5 left-2.5 p-2 rounded-full bg-[#150f24]/80 backdrop-blur-md border border-white/15 text-stone-300 hover:text-rose-400 hover:bg-rose-950/60 hover:border-rose-500/50 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer z-10"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
 
         {/* Color badge over visual (top-right) */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 dark:bg-stone-800/95 backdrop-blur-xs border border-stone-200/70 dark:border-stone-700 shadow-xs text-xs text-stone-700 dark:text-stone-200">
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#150f24]/80 backdrop-blur-md border border-white/15 shadow-sm text-xs text-stone-200">
           <span
-            className="w-2.5 h-2.5 rounded-full border border-stone-300 dark:border-stone-600 shadow-2xs shrink-0"
+            className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0 shadow-xs"
             style={{ backgroundColor: garment.colorHex || '#57534e' }}
           />
           <span className="font-medium truncate max-w-[85px]">{garment.color}</span>
@@ -102,33 +102,33 @@ export function GarmentCard({
           }}
           title={isSelected ? 'Deseleccionar de outfit' : 'Seleccionar para combinar en outfit'}
           aria-label={isSelected ? 'Deseleccionar' : 'Seleccionar'}
-          className={`absolute bottom-2.5 right-2.5 p-1.5 rounded-full border shadow-xs transition-all cursor-pointer z-10 flex items-center justify-center ${
+          className={`absolute bottom-2.5 right-2.5 p-1.5 rounded-full border shadow-sm transition-all cursor-pointer z-10 flex items-center justify-center ${
             isSelected
-              ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 border-stone-900 dark:border-stone-100 scale-105'
-              : 'bg-white/90 dark:bg-stone-800/90 text-stone-400 dark:text-stone-500 border-stone-200/80 dark:border-stone-700 hover:text-stone-700 dark:hover:text-stone-200 hover:scale-105'
+              ? 'bg-[#d9a6ff] text-[#150f24] border-[#d9a6ff] shadow-[0_0_12px_rgba(217,166,255,0.6)] scale-105 font-bold'
+              : 'bg-[#150f24]/80 text-stone-400 border-white/15 hover:text-white hover:scale-105'
           }`}
         >
-          <Check className={`w-3.5 h-3.5 ${isSelected ? 'stroke-[2.5]' : 'opacity-40 hover:opacity-100'}`} />
+          <Check className={`w-3.5 h-3.5 ${isSelected ? 'stroke-[2.8]' : 'opacity-40 hover:opacity-100'}`} />
         </button>
 
         {/* Visual status hint banner on hover / selected / editing */}
         {isSelected ? (
-          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-lg bg-stone-900/95 dark:bg-stone-100/95 text-white dark:text-stone-900 text-[11px] font-semibold flex items-center gap-1.5 shadow-xs z-10">
-            <Check className="w-3 h-3 stroke-[2.5]" />
+          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-full bg-[#d9a6ff] text-[#150f24] text-[11px] font-bold flex items-center gap-1.5 shadow-sm z-10">
+            <Check className="w-3 h-3 stroke-[2.8]" />
             <span>Seleccionada</span>
           </div>
         ) : isEditing ? (
-          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-lg bg-amber-500 text-white text-[11px] font-medium flex items-center gap-1.5 shadow-xs z-10">
+          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-full bg-amber-400 text-stone-900 text-[11px] font-bold flex items-center gap-1.5 shadow-sm z-10">
             <Edit3 className="w-3 h-3" />
             <span>Editando</span>
           </div>
         ) : isSelectionMode ? (
-          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-lg bg-stone-900/80 dark:bg-stone-800/90 text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow-xs z-10">
+          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-full bg-[#150f24]/90 text-stone-200 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow-sm z-10 border border-white/10">
             <span>Toca para elegir</span>
           </div>
         ) : (
-          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-lg bg-white/90 dark:bg-stone-800/90 backdrop-blur-xs text-stone-700 dark:text-stone-300 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-xs border border-stone-200/60 dark:border-stone-700/60 z-10">
-            <Edit3 className="w-3 h-3 text-stone-500 dark:text-stone-400" />
+          <div className="absolute bottom-2 left-2 py-1 px-2.5 rounded-full bg-[#150f24]/90 backdrop-blur-md text-stone-300 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-sm border border-white/15 z-10">
+            <Edit3 className="w-3 h-3 text-[#d9a6ff]" />
             <span>Toca para editar</span>
           </div>
         )}
@@ -137,26 +137,28 @@ export function GarmentCard({
       {/* Card Details */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100 tracking-tight capitalize">
+          <h3 className="text-base font-semibold text-white tracking-tight capitalize font-['Outfit']">
             {garment.type}
           </h3>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            Color: <span className="text-stone-700 dark:text-stone-200 font-medium">{garment.color}</span>
+          <p className="text-xs text-stone-400 mt-0.5">
+            Color: <span className="text-stone-200 font-medium">{garment.color}</span>
           </p>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400 dark:text-stone-500">
-          <span className="flex items-center gap-1">
+        <div className="mt-3 pt-3 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-stone-400">
+          <span className="flex items-center gap-1.5">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
                 isSelected
-                  ? 'bg-stone-900 dark:bg-stone-100'
+                  ? 'bg-[#d9a6ff] shadow-[0_0_6px_#d9a6ff]'
                   : isEditing
-                  ? 'bg-amber-500'
-                  : 'bg-stone-300 dark:bg-stone-600'
+                  ? 'bg-amber-400 shadow-[0_0_6px_#f59e0b]'
+                  : 'bg-stone-500'
               }`}
             ></span>
-            {isSelected ? 'Elegida para outfit' : isEditing ? 'Editando' : 'En armario'}
+            <span className={isSelected ? 'text-[#d9a6ff] font-medium' : ''}>
+              {isSelected ? 'Elegida para outfit' : isEditing ? 'Editando' : 'En armario'}
+            </span>
           </span>
           <span>
             {new Date(garment.createdAt).toLocaleDateString('es-ES', {
