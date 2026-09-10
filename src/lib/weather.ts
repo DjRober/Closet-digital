@@ -115,7 +115,7 @@ export function suggestOutfit(weather: WeatherInfo, garments: Garment[]): Outfit
   if (shoes[0]) picks.push(shoes[0]);
 
   let headline: string;
-  if (cold) headline = 'Hace fresco: sumá una capa de abrigo.';
+  if (cold) headline = 'Hace fresco: suma una capa de abrigo.';
   else if (warm) headline = 'Día cálido: algo ligero y fresco.';
   else headline = 'Clima templado: ideal para tu look de siempre.';
 

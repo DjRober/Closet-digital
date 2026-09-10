@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { CloudSun, MapPin, RefreshCw, Loader2, Sparkles } from 'lucide-react';
+import { CloudSun, MapPin, RefreshCw, Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { Garment } from '../types';
 import { fetchCurrentWeather, suggestOutfit, WeatherInfo, OutfitSuggestion } from '../lib/weather';
 
 interface WeatherBarProps {
   garments: Garment[];
+  onGenerateOutfit?: () => void;
 }
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
 
-export function WeatherBar({ garments }: WeatherBarProps) {
+export function WeatherBar({ garments, onGenerateOutfit }: WeatherBarProps) {
   const [status, setStatus] = useState<Status>('idle');
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [suggestion, setSuggestion] = useState<OutfitSuggestion | null>(null);
@@ -22,6 +23,11 @@ export function WeatherBar({ garments }: WeatherBarProps) {
       const w = await fetchCurrentWeather();
       setWeather(w);
       setStatus('ready');
+      try {
+        localStorage.setItem('ropero_weather_ok', '1');
+      } catch {
+        /* almacenamiento no disponible */
+      }
     } catch (e) {
       const err = e as GeolocationPositionError | Error;
       const denied = 'code' in err && err.code === 1;
@@ -37,6 +43,37 @@ export function WeatherBar({ garments }: WeatherBarProps) {
   useEffect(() => {
     if (weather) setSuggestion(suggestOutfit(weather, garments));
   }, [weather, garments]);
+
+  // Autocarga el clima si el permiso ya fue concedido antes
+  useEffect(() => {
+    let cancelled = false;
+    const tryAuto = async () => {
+      let remembered = false;
+      try {
+        remembered = localStorage.getItem('ropero_weather_ok') === '1';
+      } catch {
+        /* ignore */
+      }
+      try {
+        const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
+        if (perms?.query) {
+          const status = await perms.query({ name: 'geolocation' as PermissionName });
+          if (!cancelled && (status.state === 'granted' || (remembered && status.state !== 'denied'))) {
+            load();
+          }
+        } else if (remembered && !cancelled) {
+          load();
+        }
+      } catch {
+        if (remembered && !cancelled) load();
+      }
+    };
+    tryAuto();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="glass-panel overflow-hidden">
@@ -79,9 +116,22 @@ export function WeatherBar({ garments }: WeatherBarProps) {
               )}
             </div>
 
-            <button type="button" onClick={load} className="glass-pill p-2 self-start text-stone-300 hover:text-white cursor-pointer" title="Actualizar clima" aria-label="Actualizar clima">
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2 self-start">
+              {onGenerateOutfit && (
+                <button
+                  type="button"
+                  onClick={onGenerateOutfit}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.16] border border-white/15 text-[#d9a6ff] hover:text-white text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
+                  title="Generar un outfit para el clima de hoy"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Generar look</span>
+                </button>
+              )}
+              <button type="button" onClick={load} className="glass-pill p-2 text-stone-300 hover:text-white cursor-pointer" title="Actualizar clima" aria-label="Actualizar clima">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
           </>
         ) : (
           <div className="flex items-center justify-between gap-4 w-full">

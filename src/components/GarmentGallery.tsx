@@ -21,6 +21,8 @@ interface GarmentGalleryProps {
   onLoadSampleGarments?: () => void;
   onToggleFavorite?: (garment: Garment) => void;
   onMarkWorn?: (garment: Garment) => void;
+  onUnmarkWorn?: (garment: Garment) => void;
+  isLoading?: boolean;
 }
 
 const CATEGORY_FILTERS: { key: GarmentRole | 'all'; label: string }[] = [
@@ -49,6 +51,8 @@ export function GarmentGallery({
   onLoadSampleGarments,
   onToggleFavorite,
   onMarkWorn,
+  onUnmarkWorn,
+  isLoading = false,
 }: GarmentGalleryProps) {
   const selectedCount = selectedGarmentIds.length;
   const [category, setCategory] = useState<GarmentRole | 'all'>('all');
@@ -198,8 +202,21 @@ export function GarmentGallery({
         </div>
       )}
 
-      {/* Grid or Empty State */}
-      {garments.length === 0 ? (
+      {/* Grid, carga o estado vacío */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="glass-panel overflow-hidden animate-pulse">
+              <div className="aspect-4/3 w-full bg-white/[0.06]" />
+              <div className="p-4 space-y-2">
+                <div className="h-3.5 w-2/3 rounded bg-white/[0.08]" />
+                <div className="h-2.5 w-1/2 rounded bg-white/[0.06]" />
+                <div className="h-2.5 w-full rounded bg-white/[0.05] mt-3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : garments.length === 0 ? (
         <div
           id="armario-empty-state"
           className="glass-panel p-10 sm:p-14 text-center border-dashed border-white/20"
@@ -259,6 +276,7 @@ export function GarmentGallery({
                 onDeleteRequest={onDeleteRequest}
                 onToggleFavorite={onToggleFavorite}
                 onMarkWorn={onMarkWorn}
+                onUnmarkWorn={onUnmarkWorn}
               />
             ))}
           </AnimatePresence>
@@ -269,7 +287,7 @@ export function GarmentGallery({
       {selectedCount > 0 && (
         <div
           id="barra-seleccion-outfit"
-          className="fixed bottom-6 inset-x-4 max-w-lg mx-auto z-40 glass-panel !bg-[#1c152e]/95 backdrop-blur-2xl border border-white/20 p-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_1px_0_0_rgba(255,255,255,0.2)_inset] animate-fade-in"
+          className="fixed bottom-20 sm:bottom-6 inset-x-4 max-w-lg mx-auto z-40 glass-panel !bg-[#1c152e]/95 backdrop-blur-2xl border border-white/20 p-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 shadow-[0_20px_60px_rgba(0,0,0,0.7),0_1px_0_0_rgba(255,255,255,0.2)_inset] animate-fade-in"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[#d9a6ff] text-[#150f24] flex items-center justify-center text-xs font-extrabold shadow-[0_0_10px_rgba(217,166,255,0.5)]">

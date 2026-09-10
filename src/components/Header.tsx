@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Cloud, LogIn, LogOut, User as UserIcon, Home, Layers, Sun, Moon, Wand2 } from 'lucide-react';
+import { Sparkles, Cloud, LogIn, LogOut, User as UserIcon, Home, Layers, Wand2 } from 'lucide-react';
 import { User } from 'firebase/auth';
 
 export type AppTab = 'landing' | 'armario' | 'outfits' | 'look';
@@ -9,8 +9,6 @@ interface HeaderProps {
   outfitCount?: number;
   activeTab?: AppTab;
   onTabChange?: (tab: AppTab) => void;
-  theme: 'light' | 'dark';
-  onToggleTheme: () => void;
   user: User | null;
   onSignIn: () => void;
   onSignOut: () => void;
@@ -22,8 +20,6 @@ export function Header({
   outfitCount = 0,
   activeTab = 'landing',
   onTabChange,
-  theme,
-  onToggleTheme,
   user,
   onSignIn,
   onSignOut,
@@ -225,22 +221,6 @@ export function Header({
               <span className="sm:hidden">Acceder</span>
             </button>
           )}
-
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            id="btn-toggle-tema"
-            onClick={onToggleTheme}
-            title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            className="glass-pill p-2 text-stone-300 hover:text-white cursor-pointer flex items-center justify-center"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-300" />
-            ) : (
-              <Moon className="w-4 h-4 text-[#d9a6ff]" />
-            )}
-          </button>
         </div>
       </div>
     </header>

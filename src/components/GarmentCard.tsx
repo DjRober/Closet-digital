@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Trash2, Edit3, Check, Heart, RotateCw } from 'lucide-react';
+import { Trash2, Edit3, Check, Heart, RotateCw, Minus } from 'lucide-react';
 import { Garment } from '../types';
 import { GarmentVisual } from './GarmentVisual';
 
@@ -15,6 +15,7 @@ interface GarmentCardProps {
   onDeleteRequest: (garment: Garment) => void;
   onToggleFavorite?: (garment: Garment) => void;
   onMarkWorn?: (garment: Garment) => void;
+  onUnmarkWorn?: (garment: Garment) => void;
 }
 
 export function GarmentCard({
@@ -28,6 +29,7 @@ export function GarmentCard({
   onDeleteRequest,
   onToggleFavorite,
   onMarkWorn,
+  onUnmarkWorn,
 }: GarmentCardProps) {
   const wearCount = garment.wearCount ?? 0;
   const isFavorite = Boolean(garment.favorite);
@@ -190,7 +192,23 @@ export function GarmentCard({
             </span>
           </span>
           <div className="flex items-center gap-2">
-            <span className="tabular-nums">{wearCount} usos</span>
+            <span className="tabular-nums flex items-center gap-1">
+              {wearCount > 0 && onUnmarkWorn && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnmarkWorn(garment);
+                  }}
+                  title="Restar un uso"
+                  aria-label="Restar un uso"
+                  className="w-4 h-4 rounded-full bg-white/[0.08] border border-white/12 flex items-center justify-center text-stone-300 hover:text-white hover:bg-white/[0.16] transition-all cursor-pointer"
+                >
+                  <Minus className="w-2.5 h-2.5" />
+                </button>
+              )}
+              {wearCount} usos
+            </span>
             {onMarkWorn && (
               <button
                 type="button"

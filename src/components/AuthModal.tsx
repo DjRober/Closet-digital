@@ -126,7 +126,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
   return (
     <div
       id="modal-auth-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -136,15 +136,15 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
     >
       <div
         id="modal-auth-container"
-        className="w-full max-w-md rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden transition-all text-stone-900 dark:text-stone-100"
+        className="w-full max-w-md rounded-3xl bg-[#1c152e] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden transition-all text-stone-100"
       >
         {/* Header with Mode Switcher */}
-        <div className="relative p-6 pb-4 border-b border-stone-100 dark:border-stone-800/80">
+        <div className="relative p-6 pb-4 border-b border-white/10">
           <button
             type="button"
             id="btn-cerrar-auth-modal"
             onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+            className="absolute top-5 right-5 p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
@@ -163,14 +163,14 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
               <h2 id="auth-modal-title" className="text-lg font-semibold tracking-tight">
                 {mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión'}
               </h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400">
+              <p className="text-xs text-stone-400">
                 Respalda tu armario y outfits en Firebase
               </p>
             </div>
           </div>
 
           {/* Tab selector */}
-          <div className="mt-4 grid grid-cols-2 p-1 rounded-xl bg-stone-100 dark:bg-stone-800/70 border border-stone-200/80 dark:border-stone-700/80 gap-1">
+          <div className="mt-4 grid grid-cols-2 p-1 rounded-xl bg-white/[0.06] border border-white/12 gap-1">
             <button
               type="button"
               id="tab-auth-signup"
@@ -181,8 +181,8 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
               }}
               className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 mode === 'signup'
-                  ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
-                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                  ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_10px_rgba(217,166,255,0.4)]'
+                  : 'text-stone-300 hover:text-white'
               }`}
             >
               Registrarse
@@ -197,8 +197,8 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
               }}
               className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 mode === 'signin'
-                  ? 'bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 shadow-2xs'
-                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                  ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_10px_rgba(217,166,255,0.4)]'
+                  : 'text-stone-300 hover:text-white'
               }`}
             >
               Iniciar sesión
@@ -212,9 +212,9 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
           {activeError && (
             <div
               id="auth-error-message"
-              className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-2 shadow-2xs"
+              className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2"
             >
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
               <span>{activeError}</span>
             </div>
           )}
@@ -223,7 +223,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
           <div>
             <label
               htmlFor="input-auth-correo"
-              className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5"
+              className="block text-xs font-medium text-stone-300 mb-1.5"
             >
               Correo electrónico
             </label>
@@ -243,7 +243,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                 }}
                 placeholder="tu@correo.com"
                 autoComplete="email"
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-white/15 bg-white/[0.06] text-white placeholder-stone-500 focus:outline-hidden focus:ring-2 focus:ring-[#d9a6ff]/40 focus:border-[#d9a6ff]/50 transition-all"
               />
             </div>
           </div>
@@ -252,7 +252,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
           <div>
             <label
               htmlFor="input-auth-contrasena"
-              className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5"
+              className="block text-xs font-medium text-stone-300 mb-1.5"
             >
               Contraseña
             </label>
@@ -272,12 +272,12 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                 }}
                 placeholder="Mínimo 6 caracteres"
                 autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                className="w-full pl-9 pr-10 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
+                className="w-full pl-9 pr-10 py-2 text-sm rounded-xl border border-white/15 bg-white/[0.06] text-white placeholder-stone-500 focus:outline-hidden focus:ring-2 focus:ring-[#d9a6ff]/40 focus:border-[#d9a6ff]/50 transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-white cursor-pointer"
                 title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -290,7 +290,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             <div>
               <label
                 htmlFor="input-auth-confirmar-contrasena"
-                className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1.5"
+                className="block text-xs font-medium text-stone-300 mb-1.5"
               >
                 Confirmar contraseña
               </label>
@@ -310,17 +310,17 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                   }}
                   placeholder="Repite tu contraseña"
                   autoComplete="new-password"
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-stone-400 dark:focus:ring-stone-600 transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-white/15 bg-white/[0.06] text-white placeholder-stone-500 focus:outline-hidden focus:ring-2 focus:ring-[#d9a6ff]/40 focus:border-[#d9a6ff]/50 transition-all"
                 />
               </div>
             </div>
           )}
 
           {/* Notice of data handling */}
-          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/80 text-[11px] text-stone-500 dark:text-stone-400">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 p-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-[11px] text-stone-400">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <p className="leading-snug">
-              <strong className="text-stone-700 dark:text-stone-200">Uso de datos:</strong> Tu correo y contraseña se emplean únicamente para autenticar tu cuenta y aislar tus prendas en la base de datos protegida.
+              <strong className="text-stone-200">Uso de datos:</strong> Tu correo y contraseña se emplean únicamente para autenticar tu cuenta y aislar tus prendas en la base de datos protegida.
             </p>
           </div>
 
@@ -329,7 +329,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             type="submit"
             id="btn-auth-submit"
             disabled={isSubmitting}
-            className="w-full mt-2 py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full mt-2 py-2.5 px-4 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-sm font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
@@ -346,10 +346,10 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
           {/* Divider */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-stone-200 dark:border-stone-800" />
+              <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-stone-900 px-3 text-stone-400">
+              <span className="bg-[#1c152e] px-3 text-stone-400">
                 o también puedes
               </span>
             </div>
@@ -361,7 +361,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             id="btn-auth-modal-google"
             onClick={handleGoogleSignIn}
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 hover:bg-stone-100 dark:bg-stone-800/80 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs font-medium shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-2.5"
+            className="glass-pill w-full py-2.5 px-4 text-stone-200 hover:text-white text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-2.5"
           >
             {/* Google G icon */}
             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -387,7 +387,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
         </form>
 
         {/* Footer switch prompt */}
-        <div className="p-4 bg-stone-50/70 dark:bg-stone-800/40 border-t border-stone-100 dark:border-stone-800/80 text-center text-xs text-stone-500 dark:text-stone-400">
+        <div className="p-4 bg-white/[0.03] border-t border-white/10 text-center text-xs text-stone-400">
           {mode === 'signup' ? (
             <p>
               ¿Ya tienes una cuenta?{' '}
@@ -398,7 +398,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                   setLocalValidationMessage(null);
                   clearAuthError();
                 }}
-                className="text-stone-900 dark:text-stone-100 font-semibold underline underline-offset-2 hover:opacity-80 cursor-pointer"
+                className="text-[#d9a6ff] font-semibold underline underline-offset-2 hover:opacity-80 cursor-pointer"
               >
                 Inicia sesión aquí
               </button>
@@ -413,7 +413,7 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
                   setLocalValidationMessage(null);
                   clearAuthError();
                 }}
-                className="text-stone-900 dark:text-stone-100 font-semibold underline underline-offset-2 hover:opacity-80 cursor-pointer"
+                className="text-[#d9a6ff] font-semibold underline underline-offset-2 hover:opacity-80 cursor-pointer"
               >
                 Regístrate con correo
               </button>

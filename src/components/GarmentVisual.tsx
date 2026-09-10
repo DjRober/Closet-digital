@@ -19,7 +19,7 @@ export function GarmentVisual({
 }: GarmentVisualProps) {
   if (imageUrl) {
     return (
-      <div className={`relative overflow-hidden bg-stone-100 dark:bg-stone-800 flex items-center justify-center ${className}`}>
+      <div className={`relative overflow-hidden bg-black/20 flex items-center justify-center ${className}`}>
         <img
           src={imageUrl}
           alt={`Prenda ${colorName || ''}`}
@@ -55,7 +55,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* T-Shirt / Camiseta path */}
             <path d="M22 10 C26 16 38 16 42 10 L56 18 L50 30 L44 26 L44 54 L20 54 L20 26 L14 30 L8 18 Z" />
@@ -72,7 +72,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Trousers / Pantalón */}
             <path d="M18 10 L46 10 L48 54 L35 54 L32 26 L29 54 L16 54 Z" />
@@ -90,7 +90,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Jacket / Abrigo */}
             <path d="M22 10 L42 10 L58 20 L52 34 L46 30 L46 54 L18 54 L18 30 L12 34 L6 20 Z" />
@@ -110,7 +110,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Dress / Vestido */}
             <path d="M24 10 L28 20 L20 28 L24 28 L14 54 L50 54 L40 28 L44 28 L36 20 L40 10 Z" />
@@ -128,7 +128,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Shoes / Zapatillas */}
             <path d="M10 38 L22 24 L34 28 L44 34 L54 36 C56 36 58 38 58 41 L58 44 C58 46 56 48 54 48 L10 48 C8 48 6 46 6 44 L6 41 C6 39 8 38 10 38 Z" />
@@ -147,7 +147,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Bag / Accessory */}
             <rect x="14" y="24" width="36" height="28" rx="4" />
@@ -167,7 +167,7 @@ export function GarmentVisual({
             strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-900 dark:text-stone-200' : ''}`}
+            className={`${iconSizeClasses} ${isVeryDark ? 'text-stone-200' : ''}`}
           >
             {/* Hanger / Percha */}
             <path d="M32 24 C30 18 36 14 38 18 C39 21 35 24 32 26 L10 38 C8 39 8 42 11 42 L53 42 C56 42 56 39 54 38 Z" />
@@ -179,9 +179,9 @@ export function GarmentVisual({
 
   return (
     <div
-      className={`relative flex items-center justify-center rounded-xl bg-stone-100/90 dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/80 transition-colors ${className}`}
+      className={`relative flex items-center justify-center rounded-xl bg-white/5 border border-white/10 transition-colors ${className}`}
       style={{
-        backgroundColor: colorHex ? `${colorHex}18` : undefined,
+        backgroundColor: colorHex ? `${colorHex}22` : undefined,
       }}
     >
       {renderIconSvg()}

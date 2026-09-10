@@ -1,10 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Plus, X, Wand2, ImagePlus, Trash2, RotateCcw } from 'lucide-react';
-import { LookImage } from '../types';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Plus, X, Wand2, ImagePlus, Trash2, RotateCcw, Shirt, Upload } from 'lucide-react';
+import { Garment, LookImage } from '../types';
+import { getGarmentRole, GarmentRole } from '../lib/outfitGenerator';
 
 interface LookBuilderProps {
   userId?: string;
+  garments?: Garment[];
 }
+
+type MainSlot = 'hair' | 'top' | 'bottom' | 'shoes';
 
 interface LookState {
   hair: string | null;
@@ -44,6 +48,7 @@ interface ImageSlotProps {
   shape?: 'circle' | 'rounded';
   onPick: (dataUrl: string) => void;
   onClear?: () => void;
+  onRequestPick?: () => void;
   className?: string;
 }
 
@@ -53,6 +58,7 @@ function ImageSlot({
   shape = 'rounded',
   onPick,
   onClear,
+  onRequestPick,
   className = '',
 }: ImageSlotProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +79,7 @@ function ImageSlot({
     <div className={`relative group ${className}`}>
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
+        onClick={() => (onRequestPick ? onRequestPick() : inputRef.current?.click())}
         title={imageUrl ? 'Cambiar foto' : placeholder}
         className={`w-full h-full ${radius} overflow-hidden flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
           imageUrl
@@ -104,11 +110,30 @@ function ImageSlot({
   );
 }
 
-export function LookBuilder({ userId }: LookBuilderProps) {
+const SLOT_ROLE: Record<Exclude<MainSlot, 'hair'>, GarmentRole> = {
+  top: 'top',
+  bottom: 'bottom',
+  shoes: 'shoes',
+};
+
+export function LookBuilder({ userId, garments = [] }: LookBuilderProps) {
   const storageKey = `ropero_look_${userId || 'guest'}`;
   const [look, setLook] = useState<LookState>(EMPTY_LOOK);
   const [loaded, setLoaded] = useState(false);
+  const [picker, setPicker] = useState<Exclude<MainSlot, 'hair'> | null>(null);
+  const pickerUploadRef = useRef<HTMLInputElement>(null);
   const nextId = useRef(1);
+
+  // Prendas del clóset con foto, agrupadas por rol para el selector
+  const wardrobeByRole = useMemo(() => {
+    const map: Record<string, Garment[]> = { top: [], bottom: [], shoes: [] };
+    for (const g of garments) {
+      if (!g.imageUrl) continue;
+      const role = getGarmentRole(g);
+      if (role === 'top' || role === 'bottom' || role === 'shoes') map[role].push(g);
+    }
+    return map;
+  }, [garments]);
 
   // Cargar look guardado al cambiar de usuario
   useEffect(() => {
@@ -171,7 +196,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white tracking-tight font-['Outfit']">Armá tu look</h2>
-            <p className="text-xs text-stone-400">Subí las fotos de tus prendas y probá cómo se ven juntas.</p>
+            <p className="text-xs text-stone-400">Sube las fotos de tus prendas y prueba cómo se ven juntas.</p>
           </div>
         </div>
         <button
@@ -202,6 +227,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
               placeholder="foto de tu top"
               onPick={(u) => setSlot('top', u)}
               onClear={() => setSlot('top', null)}
+              onRequestPick={wardrobeByRole.top.length ? () => setPicker('top') : undefined}
               className="w-32 h-40"
             />
             <ImageSlot
@@ -209,6 +235,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
               placeholder="foto de tu pantalón"
               onPick={(u) => setSlot('bottom', u)}
               onClear={() => setSlot('bottom', null)}
+              onRequestPick={wardrobeByRole.bottom.length ? () => setPicker('bottom') : undefined}
               className="w-28 h-36"
             />
             <ImageSlot
@@ -216,6 +243,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
               placeholder="foto de tu calzado"
               onPick={(u) => setSlot('shoes', u)}
               onClear={() => setSlot('shoes', null)}
+              onRequestPick={wardrobeByRole.shoes.length ? () => setPicker('shoes') : undefined}
               className="w-24 h-14"
             />
           </div>
@@ -237,7 +265,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
               </button>
             </div>
             {look.accessories.length === 0 ? (
-              <p className="text-[11px] text-stone-400">Sumá aros, bolsos, gorras y compará opciones.</p>
+              <p className="text-[11px] text-stone-400">Suma aros, bolsos, gorras y compara opciones.</p>
             ) : (
               <div className="grid grid-cols-4 gap-2.5">
                 {look.accessories.map((acc) => (
@@ -270,7 +298,7 @@ export function LookBuilder({ userId }: LookBuilderProps) {
               </button>
             </div>
             {look.hairstyles.length === 0 ? (
-              <p className="text-[11px] text-stone-400">Agregá fotos de peinados y elegí antes de salir.</p>
+              <p className="text-[11px] text-stone-400">Agrega fotos de peinados y elige antes de salir.</p>
             ) : (
               <div className="flex gap-2.5 overflow-x-auto pb-1">
                 {look.hairstyles.map((h) => (
@@ -291,10 +319,96 @@ export function LookBuilder({ userId }: LookBuilderProps) {
 
           <div className="flex items-start gap-2 text-[11px] text-stone-400 px-1">
             <Trash2 className="w-3.5 h-3.5 shrink-0 mt-0.5 text-stone-500" />
-            <span>Tocá la ✕ de cada foto para quitarla. Tu look se guarda automáticamente en este dispositivo.</span>
+            <span>Toca la ✕ de cada foto para quitarla. Tu look se guarda automáticamente en este dispositivo.</span>
           </div>
         </div>
       </div>
+
+      {/* Selector de prendas del clóset */}
+      {picker && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPicker(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-lg rounded-3xl bg-[#1c152e] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-stone-100 overflow-hidden">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/12 flex items-center justify-center text-[#d9a6ff]">
+                  <Shirt className="w-4 h-4" />
+                </div>
+                <h3 className="font-['Outfit'] text-base font-bold text-white">Elegir del clóset</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPicker(null)}
+                aria-label="Cerrar"
+                className="p-1.5 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {wardrobeByRole[SLOT_ROLE[picker]].map((g) => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => {
+                      setSlot(picker, g.imageUrl!);
+                      setPicker(null);
+                    }}
+                    title={`${g.type} · ${g.color}`}
+                    className="group rounded-2xl overflow-hidden border border-white/10 hover:border-[#d9a6ff]/60 transition-all cursor-pointer aspect-square"
+                  >
+                    <img src={g.imageUrl} alt={g.type} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-white/10 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => pickerUploadRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-stone-200 text-xs font-semibold transition-all cursor-pointer"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Subir una foto nueva</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPicker(null)}
+                className="glass-pill px-4 py-2 text-stone-300 hover:text-white text-xs font-semibold cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <input
+        ref={pickerUploadRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file || !picker) return;
+          try {
+            setSlot(picker, await readImageFile(file));
+            setPicker(null);
+          } catch {
+            alert('Selecciona un archivo de imagen válido.');
+          }
+          e.target.value = '';
+        }}
+      />
     </div>
   );
 }

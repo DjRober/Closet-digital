@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Image as ImageIcon, Check, Upload, Sparkles, Edit3, X } from 'lucide-react';
+import { Camera, Check, Upload, Sparkles, Edit3, X } from 'lucide-react';
 import { Garment, GarmentIconKey } from '../types';
 import { GARMENT_TYPE_PRESETS, COLOR_PRESETS, ICON_OPTIONS } from '../data/garmentOptions';
 import { GarmentVisual } from './GarmentVisual';
@@ -17,7 +17,6 @@ export function GarmentForm({
   onUpdateGarment,
   onCancelEdit,
 }: GarmentFormProps) {
-  // Mode: 'photo' or 'icon'
   const [visualMode, setVisualMode] = useState<'photo' | 'icon'>('icon');
   const [imageUrl, setImageUrl] = useState<string>('');
   const [iconKey, setIconKey] = useState<GarmentIconKey>('shirt');
@@ -31,7 +30,6 @@ export function GarmentForm({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Populate form fields when editingGarment is provided
   useEffect(() => {
     if (editingGarment) {
       setGarmentType(editingGarment.type);
@@ -60,12 +58,9 @@ export function GarmentForm({
     onCancelEdit?.();
   };
 
-  // Handle image file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
-    }
+    if (file) processFile(file);
   };
 
   const processFile = (file: File) => {
@@ -75,54 +70,36 @@ export function GarmentForm({
     }
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setImageUrl(result);
+      setImageUrl(event.target?.result as string);
       setVisualMode('photo');
     };
     reader.readAsDataURL(file);
   };
 
-  // Drag & drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
   };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
+  const handleDragLeave = () => setIsDragOver(false);
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      processFile(file);
-    }
+    if (file) processFile(file);
   };
 
-  // Select garment type preset
   const handleSelectTypePreset = (typeLabel: string, defaultIcon: GarmentIconKey) => {
     setGarmentType(typeLabel);
-    if (errors.type) {
-      setErrors((prev) => ({ ...prev, type: undefined }));
-    }
-    // Automatically set default icon if not in photo mode
-    if (visualMode === 'icon') {
-      setIconKey(defaultIcon);
-    }
+    if (errors.type) setErrors((prev) => ({ ...prev, type: undefined }));
+    if (visualMode === 'icon') setIconKey(defaultIcon);
   };
 
-  // Select color preset
   const handleSelectColorPreset = (name: string, hex: string) => {
     setColorName(name);
     setColorHex(hex);
-    if (errors.color) {
-      setErrors((prev) => ({ ...prev, color: undefined }));
-    }
+    if (errors.color) setErrors((prev) => ({ ...prev, color: undefined }));
   };
 
-  // Form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -130,14 +107,12 @@ export function GarmentForm({
     const trimmedType = garmentType.trim();
     const trimmedColor = colorName.trim();
 
-    // Validar tipo de prenda
     if (!trimmedType) {
       newErrors.type = 'El tipo de prenda es obligatorio y no puede ir vacío.';
     } else if (trimmedType.length > 50) {
       newErrors.type = `El tipo de prenda es demasiado largo (máximo 50 caracteres, tiene ${trimmedType.length}).`;
     }
 
-    // Validar color de prenda
     if (!trimmedColor) {
       newErrors.color = 'El color de la prenda es obligatorio y no puede ir vacío.';
     } else if (trimmedColor.length > 40) {
@@ -154,16 +129,13 @@ export function GarmentForm({
         ...editingGarment,
         type: trimmedType,
         color: trimmedColor,
-        colorHex: colorHex,
+        colorHex,
         imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
-        iconKey: iconKey,
+        iconKey,
       };
-
       onUpdateGarment?.(updatedGarment);
       setFeedbackMessage('¡Prenda actualizada con éxito!');
       setShowSavedFeedback(true);
-
-      // Reset form fields
       setGarmentType('');
       setColorName('');
       setImageUrl('');
@@ -174,27 +146,30 @@ export function GarmentForm({
         id: `garment-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         type: trimmedType,
         color: trimmedColor,
-        colorHex: colorHex,
+        colorHex,
         imageUrl: visualMode === 'photo' && imageUrl ? imageUrl : undefined,
-        iconKey: iconKey,
+        iconKey,
         createdAt: Date.now(),
+        favorite: false,
+        wearCount: 0,
       };
-
       onAddGarment(newGarment);
       setFeedbackMessage('¡Prenda agregada al armario!');
       setShowSavedFeedback(true);
-
-      // Reset form fields
       setGarmentType('');
       setColorName('');
       setImageUrl('');
       setErrors({});
     }
 
-    setTimeout(() => {
-      setShowSavedFeedback(false);
-    }, 2800);
+    setTimeout(() => setShowSavedFeedback(false), 2800);
   };
+
+  const fieldLabel = 'text-xs font-semibold text-stone-300 uppercase tracking-wider';
+  const inputBase =
+    'w-full px-3.5 py-2.5 rounded-xl text-sm text-white placeholder-stone-500 bg-white/[0.06] border focus:outline-hidden focus:ring-2 transition-all';
+  const inputNormal = 'border-white/15 focus:border-[#d9a6ff]/50 focus:ring-[#d9a6ff]/25';
+  const inputError = 'border-rose-400/60 focus:ring-rose-400/25 bg-rose-500/10';
 
   return (
     <div
@@ -261,20 +236,18 @@ export function GarmentForm({
           {/* Espacio para foto o ícono de prenda */}
           <div className="md:col-span-5 flex flex-col space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-                Foto o ícono de prenda
-              </label>
+              <label className={fieldLabel}>Foto o ícono de prenda</label>
 
               {/* Selector entre modo Foto e Ícono */}
-              <div className="inline-flex p-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs">
+              <div className="inline-flex p-0.5 rounded-lg bg-white/[0.06] border border-white/12 text-xs">
                 <button
                   type="button"
                   id="tab-modo-icono"
                   onClick={() => setVisualMode('icon')}
-                  className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 cursor-pointer ${
                     visualMode === 'icon'
-                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-2xs'
-                      : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                      ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_10px_rgba(217,166,255,0.4)]'
+                      : 'text-stone-300 hover:text-white'
                   }`}
                 >
                   <Sparkles className="w-3 h-3" />
@@ -284,10 +257,10 @@ export function GarmentForm({
                   type="button"
                   id="tab-modo-foto"
                   onClick={() => setVisualMode('photo')}
-                  className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded-md transition-all font-medium flex items-center gap-1 cursor-pointer ${
                     visualMode === 'photo'
-                      ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-white shadow-2xs'
-                      : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                      ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_10px_rgba(217,166,255,0.4)]'
+                      : 'text-stone-300 hover:text-white'
                   }`}
                 >
                   <Camera className="w-3 h-3" />
@@ -304,8 +277,8 @@ export function GarmentForm({
               onDrop={handleDrop}
               className={`relative aspect-4/3 w-full rounded-2xl border-2 transition-all flex flex-col items-center justify-center p-4 overflow-hidden ${
                 isDragOver
-                  ? 'border-stone-900 dark:border-stone-100 bg-stone-100 dark:bg-stone-800'
-                  : 'border-dashed border-stone-300 dark:border-stone-700 bg-stone-50/80 dark:bg-stone-950/40 hover:bg-stone-50 dark:hover:bg-stone-900/60'
+                  ? 'border-[#d9a6ff] bg-[#d9a6ff]/10'
+                  : 'border-dashed border-white/15 bg-black/20 hover:bg-white/[0.04]'
               }`}
             >
               {visualMode === 'photo' ? (
@@ -316,12 +289,12 @@ export function GarmentForm({
                       alt="Previsualización de la prenda"
                       className="w-full h-full object-cover rounded-xl"
                     />
-                    <div className="absolute inset-0 bg-stone-900/40 opacity-0 hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-2">
                       <button
                         type="button"
                         id="btn-cambiar-foto"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1.5 bg-white text-stone-900 text-xs font-medium rounded-lg shadow-sm hover:bg-stone-100 cursor-pointer"
+                        className="glass-pill px-3 py-1.5 text-white text-xs font-medium cursor-pointer"
                       >
                         Cambiar foto
                       </button>
@@ -329,7 +302,7 @@ export function GarmentForm({
                         type="button"
                         id="btn-quitar-foto"
                         onClick={() => setImageUrl('')}
-                        className="px-3 py-1.5 bg-stone-800 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-stone-700 cursor-pointer"
+                        className="px-3 py-1.5 bg-rose-500/90 hover:bg-rose-500 text-white text-xs font-medium rounded-full cursor-pointer"
                       >
                         Quitar
                       </button>
@@ -340,33 +313,20 @@ export function GarmentForm({
                     onClick={() => fileInputRef.current?.click()}
                     className="cursor-pointer text-center flex flex-col items-center justify-center h-full w-full py-4"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white dark:bg-stone-800 shadow-xs border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300 mb-2">
-                      <Upload className="w-5 h-5 text-stone-500 dark:text-stone-400" />
+                    <div className="w-12 h-12 rounded-full bg-white/[0.06] border border-white/12 flex items-center justify-center text-[#d9a6ff] mb-2 shadow-[0_0_14px_rgba(217,166,255,0.2)]">
+                      <Upload className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-medium text-stone-800 dark:text-stone-200">
-                      Subir foto de la prenda
-                    </span>
-                    <span className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
-                      Haz clic o arrastra una imagen aquí
-                    </span>
-                    <span className="text-[10px] text-stone-400 dark:text-stone-500 mt-1 max-w-[220px]">
+                    <span className="text-xs font-medium text-stone-200">Subir foto de la prenda</span>
+                    <span className="text-[11px] text-stone-400 mt-0.5">Haz clic o arrastra una imagen aquí</span>
+                    <span className="text-[10px] text-stone-500 mt-1 max-w-[220px]">
                       Solo la prenda aislada (evita rostros o datos personales)
                     </span>
                   </div>
                 )
               ) : (
-                /* Icon Preview Mode */
                 <div className="flex flex-col items-center justify-center w-full h-full">
-                  <GarmentVisual
-                    iconKey={iconKey}
-                    colorHex={colorHex}
-                    colorName={colorName}
-                    size="lg"
-                    className="w-24 h-24 shadow-2xs"
-                  />
-                  <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-2 font-medium">
-                    Vista previa de la prenda
-                  </span>
+                  <GarmentVisual iconKey={iconKey} colorHex={colorHex} colorName={colorName} size="lg" className="w-24 h-24" />
+                  <span className="text-[11px] text-stone-400 mt-2 font-medium">Vista previa de la prenda</span>
                 </div>
               )}
 
@@ -383,13 +343,8 @@ export function GarmentForm({
             {/* If icon mode, select icon option */}
             {visualMode === 'icon' && (
               <div>
-                <label className="text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-1.5 block">
-                  Elegir ícono de prenda:
-                </label>
-                <div
-                  id="selector-iconos-prenda"
-                  className="grid grid-cols-4 gap-1.5"
-                >
+                <label className="text-[11px] font-medium text-stone-400 mb-1.5 block">Elegir ícono de prenda:</label>
+                <div id="selector-iconos-prenda" className="grid grid-cols-4 gap-1.5">
                   {ICON_OPTIONS.map((opt) => (
                     <button
                       key={opt.key}
@@ -398,19 +353,17 @@ export function GarmentForm({
                       onClick={() => setIconKey(opt.key)}
                       className={`px-2 py-1.5 rounded-lg text-xs flex flex-col items-center gap-1 border transition-all cursor-pointer ${
                         iconKey === opt.key
-                          ? 'border-stone-900 dark:border-stone-100 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-xs'
-                          : 'border-stone-200 dark:border-stone-700/80 bg-white dark:bg-stone-800/80 text-stone-700 dark:text-stone-300 hover:border-stone-300 dark:hover:border-stone-600'
+                          ? 'border-[#d9a6ff] bg-[#d9a6ff]/15 text-white shadow-[0_0_12px_rgba(217,166,255,0.25)]'
+                          : 'border-white/10 bg-white/[0.04] text-stone-300 hover:border-white/25'
                       }`}
                     >
                       <GarmentVisual
                         iconKey={opt.key}
-                        colorHex={iconKey === opt.key ? (colorHex || '#ffffff') : colorHex}
+                        colorHex={colorHex}
                         size="sm"
-                        className="w-7 h-7 bg-transparent border-0"
+                        className="w-7 h-7 !bg-transparent !border-0"
                       />
-                      <span className="text-[10px] truncate max-w-full leading-tight">
-                        {opt.label}
-                      </span>
+                      <span className="text-[10px] truncate max-w-full leading-tight">{opt.label}</span>
                     </button>
                   ))}
                 </div>
@@ -423,15 +376,10 @@ export function GarmentForm({
             {/* Campo Tipo de Prenda */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="input-tipo-prenda"
-                  className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
-                >
-                  Tipo de prenda <span className="text-rose-500">*</span>
+                <label htmlFor="input-tipo-prenda" className={`${fieldLabel} block`}>
+                  Tipo de prenda <span className="text-rose-400">*</span>
                 </label>
-                <span className="text-[11px] text-stone-400">
-                  {garmentType.length}/50
-                </span>
+                <span className="text-[11px] text-stone-400">{garmentType.length}/50</span>
               </div>
               <input
                 id="input-tipo-prenda"
@@ -440,26 +388,16 @@ export function GarmentForm({
                 value={garmentType}
                 onChange={(e) => {
                   setGarmentType(e.target.value);
-                  if (errors.type) {
-                    setErrors((prev) => ({ ...prev, type: undefined }));
-                  }
+                  if (errors.type) setErrors((prev) => ({ ...prev, type: undefined }));
                 }}
                 placeholder="Ej. Camiseta, Pantalón, Chaqueta, Vestido..."
-                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 bg-white dark:bg-stone-800/90 focus:outline-hidden focus:ring-2 transition-all ${
-                  errors.type
-                    ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 bg-rose-50/20 dark:bg-rose-950/20'
-                    : 'border-stone-200 dark:border-stone-700 focus:border-stone-400 dark:focus:border-stone-500 focus:ring-stone-200 dark:focus:ring-stone-700'
-                }`}
+                className={`${inputBase} ${errors.type ? inputError : inputNormal}`}
               />
-              {errors.type && (
-                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">{errors.type}</p>
-              )}
+              {errors.type && <p className="text-xs text-rose-300 mt-1 font-medium">{errors.type}</p>}
 
               {/* Sugerencias rápidas de tipo */}
               <div className="pt-1">
-                <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium block mb-1.5">
-                  Sugerencias rápidas:
-                </span>
+                <span className="text-[11px] text-stone-400 font-medium block mb-1.5">Sugerencias rápidas:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {GARMENT_TYPE_PRESETS.map((preset) => (
                     <button
@@ -467,10 +405,10 @@ export function GarmentForm({
                       type="button"
                       id={`preset-tipo-${preset.label.toLowerCase()}`}
                       onClick={() => handleSelectTypePreset(preset.label, preset.defaultIcon)}
-                      className={`px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-full text-xs border transition-all cursor-pointer ${
                         garmentType.toLowerCase() === preset.label.toLowerCase()
-                          ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100 shadow-2xs'
-                          : 'bg-stone-50 dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                          ? 'bg-[#d9a6ff] text-[#150f24] border-transparent font-semibold shadow-[0_0_12px_rgba(217,166,255,0.35)]'
+                          : 'bg-white/[0.06] hover:bg-white/[0.12] text-stone-300 border-white/12'
                       }`}
                     >
                       {preset.label}
@@ -483,25 +421,13 @@ export function GarmentForm({
             {/* Campo Color */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="input-color-prenda"
-                  className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider block"
-                >
-                  Color <span className="text-rose-500">*</span>
+                <label htmlFor="input-color-prenda" className={`${fieldLabel} block`}>
+                  Color <span className="text-rose-400">*</span>
                 </label>
-
-                {/* Color preview badge */}
-                <div className="flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-300">
-                  <span
-                    className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 shadow-2xs"
-                    style={{ backgroundColor: colorHex }}
-                  />
-                  <span className="font-medium text-stone-800 dark:text-stone-200">
-                    {colorName || 'Sin color seleccionado'}
-                  </span>
-                  <span className="text-[11px] text-stone-400 ml-1">
-                    ({colorName.length}/40)
-                  </span>
+                <div className="flex items-center gap-1.5 text-xs text-stone-300">
+                  <span className="w-3.5 h-3.5 rounded-full border border-white/25" style={{ backgroundColor: colorHex }} />
+                  <span className="font-medium text-stone-200">{colorName || 'Sin color seleccionado'}</span>
+                  <span className="text-[11px] text-stone-400 ml-1">({colorName.length}/40)</span>
                 </div>
               </div>
 
@@ -513,40 +439,26 @@ export function GarmentForm({
                   value={colorName}
                   onChange={(e) => {
                     setColorName(e.target.value);
-                    if (errors.color) {
-                      setErrors((prev) => ({ ...prev, color: undefined }));
-                    }
+                    if (errors.color) setErrors((prev) => ({ ...prev, color: undefined }));
                   }}
                   placeholder="Ej. Azul Marino, Blanco, Beige, Negro..."
-                  className={`flex-1 px-3.5 py-2.5 rounded-xl border text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 bg-white dark:bg-stone-800/90 focus:outline-hidden focus:ring-2 transition-all ${
-                    errors.color
-                      ? 'border-rose-400 dark:border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 bg-rose-50/20 dark:bg-rose-950/20'
-                      : 'border-stone-200 dark:border-stone-700 focus:border-stone-400 dark:focus:border-stone-500 focus:ring-stone-200 dark:focus:ring-stone-700'
-                  }`}
+                  className={`flex-1 ${inputBase} ${errors.color ? inputError : inputNormal}`}
                 />
-
-                {/* Input selector de color hex nativo */}
-                <div className="relative flex items-center">
-                  <input
-                    id="input-color-picker"
-                    type="color"
-                    value={colorHex}
-                    onChange={(e) => setColorHex(e.target.value)}
-                    title="Elegir tono personalizado"
-                    className="w-10 h-10 rounded-xl border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800"
-                  />
-                </div>
+                <input
+                  id="input-color-picker"
+                  type="color"
+                  value={colorHex}
+                  onChange={(e) => setColorHex(e.target.value)}
+                  title="Elegir tono personalizado"
+                  className="w-11 h-11 rounded-xl border border-white/15 cursor-pointer p-0.5 bg-white/[0.06]"
+                />
               </div>
 
-              {errors.color && (
-                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">{errors.color}</p>
-              )}
+              {errors.color && <p className="text-xs text-rose-300 mt-1 font-medium">{errors.color}</p>}
 
               {/* Paleta de colores rápidos */}
               <div className="pt-1">
-                <span className="text-[11px] text-stone-400 dark:text-stone-500 font-medium block mb-1.5">
-                  Colores habituales:
-                </span>
+                <span className="text-[11px] text-stone-400 font-medium block mb-1.5">Colores habituales:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {COLOR_PRESETS.map((preset) => {
                     const isSelected = colorName.toLowerCase() === preset.name.toLowerCase();
@@ -556,16 +468,14 @@ export function GarmentForm({
                         type="button"
                         id={`preset-color-${preset.name.toLowerCase().replace(/\s+/g, '-')}`}
                         onClick={() => handleSelectColorPreset(preset.name, preset.hex)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 border-stone-900 dark:border-stone-100 shadow-2xs'
-                            : 'bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                            ? 'bg-[#d9a6ff] text-[#150f24] border-transparent font-semibold shadow-[0_0_12px_rgba(217,166,255,0.35)]'
+                            : 'bg-white/[0.06] hover:bg-white/[0.12] text-stone-300 border-white/12'
                         }`}
                       >
                         <span
-                          className={`w-2.5 h-2.5 rounded-full ${
-                            preset.border ? 'border border-stone-300 dark:border-stone-600' : ''
-                          }`}
+                          className={`w-2.5 h-2.5 rounded-full ${preset.border ? 'border border-white/30' : ''}`}
                           style={{ backgroundColor: preset.hex }}
                         />
                         <span>{preset.name}</span>

@@ -191,12 +191,12 @@ export function LandingPage({
 
           {/* Main Headline */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-3xl leading-[1.08] drop-shadow-[0_0_35px_rgba(217,166,255,0.35)]">
-            Vestite sin pensarlo dos veces
+            Vístete sin pensarlo dos veces
           </h1>
 
           {/* Subtitle */}
           <p className="mt-6 text-base sm:text-xl text-stone-300/80 max-w-2xl font-normal leading-relaxed">
-            Guardá cada prenda que tenés, armá looks en segundos y recibí sugerencias según el clima de hoy.
+            Guarda cada prenda que tienes, arma looks en segundos y recibe sugerencias según el clima de hoy.
           </p>
 
           {/* CTAs */}
@@ -242,7 +242,7 @@ export function LandingPage({
         {/* Subtle scroll indicator / bottom cue */}
         <div className="relative z-10 pb-6 text-center">
           <span className="text-[11px] text-stone-400 font-medium tracking-wide">
-            Deslizá para descubrir las funciones ↓
+            Desliza para descubrir las funciones ↓
           </span>
         </div>
       </section>
@@ -277,7 +277,7 @@ export function LandingPage({
             </div>
             <h3 className="text-xl font-semibold text-white">Favoritos</h3>
             <p className="text-sm text-stone-300/70 leading-relaxed">
-              Marcá las prendas que más te gustan para encontrarlas primero cuando armás un look o planificás tu semana.
+              Marca las prendas que más te gustan para encontrarlas primero cuando armas un look o planificas tu semana.
             </p>
           </div>
 
@@ -288,7 +288,7 @@ export function LandingPage({
             </div>
             <h3 className="text-xl font-semibold text-white">Estadísticas de uso</h3>
             <p className="text-sm text-stone-300/70 leading-relaxed">
-              Descubrí qué usás todo el tiempo y qué quedó olvidado en el fondo del clóset para sacar el máximo partido a tu ropa.
+              Descubre qué usas todo el tiempo y qué quedó olvidado en el fondo del clóset para sacar el máximo partido a tu ropa.
             </p>
           </div>
         </div>
@@ -598,10 +598,10 @@ export function LandingPage({
         <div className="glass-panel p-8 sm:p-12 text-center relative overflow-hidden border border-white/20 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
           <div className="relative z-10 max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-              Empezá a organizar tu ropa hoy
+              Empieza a organizar tu ropa hoy
             </h2>
             <p className="text-sm sm:text-base text-stone-300/80 font-normal">
-              Accedé a tu armario desde cualquier dispositivo. Registrá tus prendas con fotos o íconos y creá combinaciones sin límites.
+              Accede a tu armario desde cualquier dispositivo. Registra tus prendas con fotos o íconos y crea combinaciones sin límites.
             </p>
             <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
               <button

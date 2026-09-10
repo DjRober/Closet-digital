@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Header } from './components/Header';
+import { Header, AppTab } from './components/Header';
+import { BottomNav } from './components/BottomNav';
 import { GarmentForm } from './components/GarmentForm';
 import { GarmentGallery } from './components/GarmentGallery';
 import { OutfitsSection } from './components/OutfitsSection';
@@ -26,7 +27,6 @@ import { Check, Cloud, Mail, AlertCircle, X, UserPlus, Lock } from 'lucide-react
 
 const GUEST_STORAGE_KEY = 'armario_digital_guest_prendas';
 const GUEST_OUTFITS_STORAGE_KEY = 'armario_digital_guest_outfits';
-const THEME_KEY = 'armario_digital_tema';
 
 const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
   {
@@ -42,25 +42,13 @@ const INITIAL_SAMPLE_OUTFITS: Outfit[] = [
 export default function App() {
   const { user, loading: authLoading, logout, authError, clearAuthError } = useAuth();
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    try {
-      const savedTheme = localStorage.getItem(THEME_KEY);
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        return savedTheme;
-      }
-    } catch {
-      // Ignore
-    }
-    return 'dark';
-  });
-
   // Garments and Outfits state (scoped strictly to the current user or guest)
   const [garments, setGarments] = useState<Garment[]>([]);
   const [outfits, setOutfits] = useState<Outfit[]>([]);
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'wardrobe' | 'outfit-creator'>('wardrobe');
-  const [activeTab, setActiveTab] = useState<'landing' | 'armario' | 'outfits' | 'look'>('landing');
+  const [activeTab, setActiveTab] = useState<AppTab>('landing');
 
   // Garment selection for outfit combination
   const [selectedGarmentIds, setSelectedGarmentIds] = useState<string[]>([]);
@@ -86,20 +74,10 @@ export default function App() {
   const gallerySectionRef = useRef<HTMLDivElement>(null);
   const outfitsSectionRef = useRef<HTMLDivElement>(null);
 
-  // Apply dark mode class to document element
+  // Ensure the dark (fairy) theme class is present
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch {
-      // Ignore
-    }
-  }, [theme]);
+    document.documentElement.classList.add('dark');
+  }, []);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -237,6 +215,18 @@ export default function App() {
     setIsAuthModalOpen(true);
   };
 
+  const handleTabChange = (tab: AppTab) => {
+    setActiveTab(tab);
+    setCurrentScreen('wardrobe');
+    if (tab === 'outfits') {
+      setTimeout(() => {
+        outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Optional: Allows a brand-new user to import starter sample clothes into their private account
   const handleLoadSampleGarmentsForUser = async () => {
     if (!user) return;
@@ -363,6 +353,16 @@ export default function App() {
     showToast(`Registraste un uso de "${garment.type}"`);
   };
 
+  const handleUnmarkWorn = (garment: Garment) => {
+    const current = garment.wearCount ?? 0;
+    if (current <= 0) return;
+    persistGarmentChange({
+      ...garment,
+      wearCount: current - 1,
+      userId: user ? user.uid : garment.userId,
+    });
+  };
+
   const handleSelectGarment = (garment: Garment) => {
     setEditingGarment(garment);
     if (formSectionRef.current) {
@@ -372,10 +372,6 @@ export default function App() {
 
   const handleCancelEdit = () => {
     setEditingGarment(null);
-  };
-
-  const handleToggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   const handleRequestDelete = (garment: Garment) => {
@@ -574,19 +570,7 @@ export default function App() {
           garmentCount={garments.length}
           outfitCount={outfits.length}
           activeTab={activeTab}
-          onTabChange={(tab) => {
-            setActiveTab(tab);
-            setCurrentScreen('wardrobe');
-            if (tab === 'outfits') {
-              setTimeout(() => {
-                outfitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }, 60);
-            } else if (tab === 'armario') {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          theme={theme}
-          onToggleTheme={handleToggleTheme}
+          onTabChange={handleTabChange}
           user={user}
           onSignIn={() => handleOpenAuthModal('signin')}
           onSignOut={logout}
@@ -716,11 +700,11 @@ export default function App() {
           userName={user?.displayName}
         />
       ) : activeTab === 'look' ? (
-        <main className="relative z-10 flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
-          <LookBuilder userId={user?.uid} />
+        <main className="relative z-10 flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8">
+          <LookBuilder userId={user?.uid} garments={garments} />
         </main>
       ) : (
-        <main className="relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
+        <main className="relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8 space-y-12">
           {currentScreen === 'outfit-creator' ? (
             /* Pantalla: Ver prendas juntas y guardar outfit */
             <OutfitCreatorScreen
@@ -733,7 +717,7 @@ export default function App() {
             /* Pantalla Principal: Armario (Registro, Edición, Galería) + Mis Outfits */
             <>
               {/* Sugerencia por clima de hoy */}
-              <WeatherBar garments={garments} />
+              <WeatherBar garments={garments} onGenerateOutfit={() => setIsAutoOutfitModalOpen(true)} />
 
               {/* Formulario de registro y edición */}
               <div ref={formSectionRef} className="scroll-mt-6">
@@ -763,6 +747,8 @@ export default function App() {
                   onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
                   onToggleFavorite={handleToggleFavorite}
                   onMarkWorn={handleMarkWorn}
+                  onUnmarkWorn={handleUnmarkWorn}
+                  isLoading={Boolean(user) && isSyncing && garments.length === 0}
                 />
               </div>
 
@@ -818,6 +804,9 @@ export default function App() {
           }, 120);
         }}
       />
+
+      {/* Navegación inferior en móvil */}
+      {activeTab !== 'landing' && <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}
 
       {/* Minimal Footer */}
       <footer className="relative z-10 border-t border-white/[0.08] py-8 text-center text-xs text-stone-400 bg-white/[0.02] backdrop-blur-md">
