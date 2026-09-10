@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Trash2, Edit3, Check } from 'lucide-react';
+import { Trash2, Edit3, Check, Heart, RotateCw } from 'lucide-react';
 import { Garment } from '../types';
 import { GarmentVisual } from './GarmentVisual';
 
@@ -13,6 +13,8 @@ interface GarmentCardProps {
   onSelect: (garment: Garment) => void;
   onToggleSelect?: (garment: Garment) => void;
   onDeleteRequest: (garment: Garment) => void;
+  onToggleFavorite?: (garment: Garment) => void;
+  onMarkWorn?: (garment: Garment) => void;
 }
 
 export function GarmentCard({
@@ -24,7 +26,12 @@ export function GarmentCard({
   onSelect,
   onToggleSelect,
   onDeleteRequest,
+  onToggleFavorite,
+  onMarkWorn,
 }: GarmentCardProps) {
+  const wearCount = garment.wearCount ?? 0;
+  const isFavorite = Boolean(garment.favorite);
+
   const handleCardClick = () => {
     if (isSelectionMode && onToggleSelect) {
       onToggleSelect(garment);
@@ -83,13 +90,35 @@ export function GarmentCard({
           <Trash2 className="w-3.5 h-3.5" />
         </button>
 
-        {/* Color badge over visual (top-right) */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#150f24]/80 backdrop-blur-md border border-white/15 shadow-sm text-xs text-stone-200">
-          <span
-            className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0 shadow-xs"
-            style={{ backgroundColor: garment.colorHex || '#57534e' }}
-          />
-          <span className="font-medium truncate max-w-[85px]">{garment.color}</span>
+        {/* Top-right controls: favorito + color */}
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+          {onToggleFavorite && (
+            <button
+              type="button"
+              id={`btn-favorito-${garment.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(garment);
+              }}
+              title={isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'}
+              aria-pressed={isFavorite}
+              className={`p-1.5 rounded-full border shadow-sm transition-all cursor-pointer flex items-center justify-center ${
+                isFavorite
+                  ? 'bg-[#d9a6ff] text-[#150f24] border-[#d9a6ff] shadow-[0_0_12px_rgba(217,166,255,0.6)]'
+                  : 'bg-[#150f24]/80 backdrop-blur-md text-stone-300 border-white/15 hover:text-[#d9a6ff] hover:scale-105'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
+            </button>
+          )}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#150f24]/80 backdrop-blur-md border border-white/15 shadow-sm text-xs text-stone-200">
+            <span
+              className="w-2.5 h-2.5 rounded-full border border-white/30 shrink-0 shadow-xs"
+              style={{ backgroundColor: garment.colorHex || '#57534e' }}
+            />
+            <span className="font-medium truncate max-w-[70px]">{garment.color}</span>
+          </div>
         </div>
 
         {/* Select for Outfit check button (bottom-right of visual area) */}
@@ -160,12 +189,24 @@ export function GarmentCard({
               {isSelected ? 'Elegida para outfit' : isEditing ? 'Editando' : 'En armario'}
             </span>
           </span>
-          <span>
-            {new Date(garment.createdAt).toLocaleDateString('es-ES', {
-              day: 'numeric',
-              month: 'short',
-            })}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="tabular-nums">{wearCount} usos</span>
+            {onMarkWorn && (
+              <button
+                type="button"
+                id={`btn-usar-${garment.id}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkWorn(garment);
+                }}
+                title="Registrar un uso de esta prenda hoy"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/12 text-stone-300 hover:text-white hover:bg-white/[0.14] transition-all cursor-pointer"
+              >
+                <RotateCw className="w-3 h-3" />
+                <span>Usé hoy</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </motion.article>

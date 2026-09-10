@@ -10,6 +10,21 @@ import {
 import { db, handleFirestoreError, OperationType } from './firebase';
 import { Garment, Outfit } from '../types';
 
+/** Firestore rechaza valores `undefined`; los eliminamos de forma recursiva. */
+function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((v) => stripUndefined(v)) as unknown as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== undefined) out[k] = stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
 /**
  * Real-time listener for user's garments
  */
@@ -94,12 +109,12 @@ export async function saveGarmentToFirestore(userId: string, garment: Garment): 
   const path = `users/${userId}/garments/${garment.id}`;
   try {
     const garmentRef = doc(db, 'users', userId, 'garments', garment.id);
-    const dataToSave: Garment = {
+    const dataToSave = stripUndefined<Garment>({
       ...garment,
       type: garment.type.trim(),
       color: garment.color.trim(),
       userId,
-    };
+    });
     await setDoc(garmentRef, dataToSave, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
@@ -167,12 +182,12 @@ export async function saveOutfitToFirestore(userId: string, outfit: Outfit): Pro
   const path = `users/${userId}/outfits/${outfit.id}`;
   try {
     const outfitRef = doc(db, 'users', userId, 'outfits', outfit.id);
-    const dataToSave: Outfit = {
+    const dataToSave = stripUndefined<Outfit>({
       ...outfit,
       name: outfit.name.trim(),
       occasion: outfit.occasion?.trim() || undefined,
       userId,
-    };
+    });
     await setDoc(outfitRef, dataToSave, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);

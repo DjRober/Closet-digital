@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Sparkles, Cloud, LogIn, LogOut, User as UserIcon, Home, Layers, Sun, Moon } from 'lucide-react';
+import { Sparkles, Cloud, LogIn, LogOut, User as UserIcon, Home, Layers, Sun, Moon, Wand2 } from 'lucide-react';
 import { User } from 'firebase/auth';
+
+export type AppTab = 'landing' | 'armario' | 'outfits' | 'look';
 
 interface HeaderProps {
   garmentCount: number;
   outfitCount?: number;
-  activeTab?: 'landing' | 'armario' | 'outfits';
-  onTabChange?: (tab: 'landing' | 'armario' | 'outfits') => void;
+  activeTab?: AppTab;
+  onTabChange?: (tab: AppTab) => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   user: User | null;
@@ -126,6 +128,22 @@ export function Header({
                 }`}>
                   {outfitCount}
                 </span>
+              </button>
+
+              {/* Tab: Armar look */}
+              <button
+                type="button"
+                id="nav-tab-look"
+                onClick={() => onTabChange('look')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === 'look'
+                    ? 'bg-[#d9a6ff] text-[#150f24] shadow-[0_0_12px_rgba(217,166,255,0.45)]'
+                    : 'text-stone-300 hover:text-white hover:bg-white/[0.06]'
+                }`}
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Armar look</span>
+                <span className="sm:hidden">Look</span>
               </button>
             </nav>
           )}

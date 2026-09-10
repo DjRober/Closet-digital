@@ -8,6 +8,9 @@ import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { AuthModal } from './components/AuthModal';
 import { LandingPage } from './components/LandingPage';
 import { AutoOutfitModal } from './components/AutoOutfitModal';
+import { WeatherBar } from './components/WeatherBar';
+import { StatsPanel } from './components/StatsPanel';
+import { LookBuilder } from './components/LookBuilder';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 import { useAuth } from './context/AuthContext';
@@ -57,7 +60,7 @@ export default function App() {
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'wardrobe' | 'outfit-creator'>('wardrobe');
-  const [activeTab, setActiveTab] = useState<'landing' | 'armario' | 'outfits'>('landing');
+  const [activeTab, setActiveTab] = useState<'landing' | 'armario' | 'outfits' | 'look'>('landing');
 
   // Garment selection for outfit combination
   const [selectedGarmentIds, setSelectedGarmentIds] = useState<string[]>([]);
@@ -324,6 +327,40 @@ export default function App() {
     } else {
       showToast(`Prenda "${garmentWithUser.type}" actualizada`);
     }
+  };
+
+  // Persiste un cambio parcial de una prenda (favorito, usos) en estado y Firestore
+  const persistGarmentChange = (updated: Garment) => {
+    setGarments((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
+    setOutfits((prev) =>
+      prev.map((o) =>
+        o.garmentIds.includes(updated.id)
+          ? { ...o, garments: o.garments.map((g) => (g.id === updated.id ? updated : g)) }
+          : o
+      )
+    );
+    if (user) {
+      saveGarmentToFirestore(user.uid, updated).catch((err) =>
+        console.error('Error al sincronizar la prenda:', err)
+      );
+    }
+  };
+
+  const handleToggleFavorite = (garment: Garment) => {
+    persistGarmentChange({
+      ...garment,
+      favorite: !garment.favorite,
+      userId: user ? user.uid : garment.userId,
+    });
+  };
+
+  const handleMarkWorn = (garment: Garment) => {
+    persistGarmentChange({
+      ...garment,
+      wearCount: (garment.wearCount ?? 0) + 1,
+      userId: user ? user.uid : garment.userId,
+    });
+    showToast(`Registraste un uso de "${garment.type}"`);
   };
 
   const handleSelectGarment = (garment: Garment) => {
@@ -678,6 +715,10 @@ export default function App() {
           userEmail={user?.email}
           userName={user?.displayName}
         />
+      ) : activeTab === 'look' ? (
+        <main className="relative z-10 flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
+          <LookBuilder userId={user?.uid} />
+        </main>
       ) : (
         <main className="relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
           {currentScreen === 'outfit-creator' ? (
@@ -691,6 +732,9 @@ export default function App() {
           ) : (
             /* Pantalla Principal: Armario (Registro, Edición, Galería) + Mis Outfits */
             <>
+              {/* Sugerencia por clima de hoy */}
+              <WeatherBar garments={garments} />
+
               {/* Formulario de registro y edición */}
               <div ref={formSectionRef} className="scroll-mt-6">
                 <GarmentForm
@@ -717,8 +761,13 @@ export default function App() {
                   onGenerateAutoOutfitClick={() => setIsAutoOutfitModalOpen(true)}
                   onDeleteRequest={handleRequestDelete}
                   onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
+                  onToggleFavorite={handleToggleFavorite}
+                  onMarkWorn={handleMarkWorn}
                 />
               </div>
+
+              {/* Estadísticas de uso */}
+              <StatsPanel garments={garments} />
 
               {/* Sección "Mis outfits" */}
               <div ref={outfitsSectionRef} className="scroll-mt-6">

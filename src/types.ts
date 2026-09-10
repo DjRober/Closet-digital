@@ -9,6 +9,10 @@ export interface Garment {
   imageUrl?: string;
   iconKey: GarmentIconKey;
   createdAt: number;
+  /** Marcada como favorita por la persona usuaria */
+  favorite?: boolean;
+  /** Número de veces que se registró como usada */
+  wearCount?: number;
 }
 
 export interface GarmentTypePreset {
@@ -30,6 +34,12 @@ export interface Outfit {
   garments: Garment[];
   createdAt: number;
   occasion?: string;
+}
+
+/** Una foto colocada en el visualizador de looks (accesorio o peinado) */
+export interface LookImage {
+  id: string;
+  imageUrl: string;
 }
 
 

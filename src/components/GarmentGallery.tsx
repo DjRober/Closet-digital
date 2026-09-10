@@ -1,7 +1,9 @@
+import { useMemo, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
-import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2 } from 'lucide-react';
+import { getGarmentRole, GarmentRole } from '../lib/outfitGenerator';
+import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2, Heart } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
@@ -17,7 +19,19 @@ interface GarmentGalleryProps {
   onGenerateAutoOutfitClick?: () => void;
   onDeleteRequest: (garment: Garment) => void;
   onLoadSampleGarments?: () => void;
+  onToggleFavorite?: (garment: Garment) => void;
+  onMarkWorn?: (garment: Garment) => void;
 }
+
+const CATEGORY_FILTERS: { key: GarmentRole | 'all'; label: string }[] = [
+  { key: 'all', label: 'Todo' },
+  { key: 'top', label: 'Tops' },
+  { key: 'bottom', label: 'Pantalones' },
+  { key: 'fullBody', label: 'Vestidos' },
+  { key: 'shoes', label: 'Calzado' },
+  { key: 'outerwear', label: 'Abrigos' },
+  { key: 'accessory', label: 'Accesorios' },
+];
 
 export function GarmentGallery({
   garments,
@@ -33,8 +47,22 @@ export function GarmentGallery({
   onGenerateAutoOutfitClick,
   onDeleteRequest,
   onLoadSampleGarments,
+  onToggleFavorite,
+  onMarkWorn,
 }: GarmentGalleryProps) {
   const selectedCount = selectedGarmentIds.length;
+  const [category, setCategory] = useState<GarmentRole | 'all'>('all');
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+
+  const favoritesCount = garments.filter((g) => g.favorite).length;
+
+  const visibleGarments = useMemo(() => {
+    let list = garments;
+    if (category !== 'all') list = list.filter((g) => getGarmentRole(g) === category);
+    if (onlyFavorites) list = list.filter((g) => g.favorite);
+    // Favoritas primero, conservando el orden original dentro de cada grupo
+    return [...list].sort((a, b) => Number(b.favorite ?? false) - Number(a.favorite ?? false));
+  }, [garments, category, onlyFavorites]);
 
   return (
     <section id="armario-galeria" className="mt-10 scroll-mt-20">
@@ -110,6 +138,39 @@ export function GarmentGallery({
         </div>
       </div>
 
+      {/* Filtros por categoría y favoritos */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 -mx-1 px-1">
+        {CATEGORY_FILTERS.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            id={`filtro-${f.key}`}
+            onClick={() => setCategory(f.key)}
+            className={`shrink-0 inline-flex items-center px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all cursor-pointer ${
+              category === f.key
+                ? 'bg-[#d9a6ff] text-[#150f24] font-semibold shadow-[0_0_12px_rgba(217,166,255,0.4)]'
+                : 'glass-pill text-stone-300 hover:text-white'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          id="filtro-favoritos"
+          onClick={() => setOnlyFavorites((v) => !v)}
+          title="Mostrar solo favoritas"
+          className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all cursor-pointer ${
+            onlyFavorites
+              ? 'bg-[#d9a6ff] text-[#150f24] font-semibold shadow-[0_0_12px_rgba(217,166,255,0.4)]'
+              : 'glass-pill text-stone-300 hover:text-white'
+          }`}
+        >
+          <Heart className={`w-3.5 h-3.5 ${onlyFavorites ? 'fill-current' : ''}`} />
+          <span>Favoritas{favoritesCount ? ` (${favoritesCount})` : ''}</span>
+        </button>
+      </div>
+
       {/* Selection Mode Notice Banner */}
       {isSelectionMode && (
         <div
@@ -169,13 +230,23 @@ export function GarmentGallery({
             </div>
           )}
         </div>
+      ) : visibleGarments.length === 0 ? (
+        <div className="glass-panel p-10 text-center border-dashed border-white/20">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-white/[0.08] border border-white/15 flex items-center justify-center text-[#d9a6ff] mb-3">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-semibold text-white font-['Outfit']">Nada por aquí con este filtro</h3>
+          <p className="text-xs text-stone-400 mt-1.5 max-w-sm mx-auto">
+            Prueba con otra categoría o quita el filtro de favoritas.
+          </p>
+        </div>
       ) : (
         <div
           id="garment-grid"
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
         >
           <AnimatePresence mode="popLayout">
-            {garments.map((garment, index) => (
+            {visibleGarments.map((garment, index) => (
               <GarmentCard
                 key={garment.id}
                 garment={garment}
@@ -186,6 +257,8 @@ export function GarmentGallery({
                 onSelect={onSelectGarment}
                 onToggleSelect={onToggleSelectGarment}
                 onDeleteRequest={onDeleteRequest}
+                onToggleFavorite={onToggleFavorite}
+                onMarkWorn={onMarkWorn}
               />
             ))}
           </AnimatePresence>
