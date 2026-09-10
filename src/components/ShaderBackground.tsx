@@ -91,7 +91,9 @@ export function ShaderBackground({
         powerPreference: 'high-performance',
         alpha: true,
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      // Menor pixel ratio en móvil para aliviar la GPU
+      const pixelRatioCap = (window.innerWidth || 1024) < 768 ? 1 : 1.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pixelRatioCap));
       container.appendChild(renderer.domElement);
       renderer.domElement.style.width = '100%';
       renderer.domElement.style.height = '100%';
@@ -115,20 +117,52 @@ export function ShaderBackground({
     onResize();
     window.addEventListener('resize', onResize);
 
-    let animationId = 0;
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-      if (effSpeed > 0) {
-        uniforms.time.value += 0.05 * effSpeed;
-      }
-      if (renderer) {
-        renderer.render(scene, camera);
-      }
+    const renderFrame = () => {
+      if (renderer) renderer.render(scene, camera);
     };
-    animate();
+
+    // Pausa el render cuando el fondo no está en pantalla o la pestaña está oculta
+    let isOnScreen = true;
+    let isPageVisible = !document.hidden;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        isOnScreen = entries.some((e) => e.isIntersecting);
+      },
+      { threshold: 0.01 }
+    );
+    io.observe(container);
+
+    const onVisibility = () => {
+      isPageVisible = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    let animationId = 0;
+
+    if (effSpeed <= 0) {
+      // Reduced motion: un único frame estático, sin bucle de animación
+      renderFrame();
+    } else {
+      const targetInterval = 1000 / 30; // límite ~30fps
+      let last = 0;
+      const animate = (now: number) => {
+        animationId = requestAnimationFrame(animate);
+        // No gastar GPU si no se ve o la pestaña está en segundo plano
+        if (!isOnScreen || !isPageVisible) return;
+        if (now - last < targetInterval) return;
+        last = now;
+        // x2 para compensar la mitad de frames respecto a 60fps
+        uniforms.time.value += 0.05 * effSpeed * 2;
+        renderFrame();
+      };
+      animationId = requestAnimationFrame(animate);
+    }
 
     return () => {
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibility);
+      io.disconnect();
       cancelAnimationFrame(animationId);
       if (renderer && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
