@@ -229,8 +229,8 @@ export function GarmentGallery({
           </h3>
           <p className="text-xs text-stone-400 mt-1.5 max-w-md mx-auto leading-relaxed">
             {isUserLoggedIn
-              ? 'Registrá tus prendas usando el formulario de arriba para armar tu vestidor en la nube.'
-              : 'Completá los datos arriba (foto o ícono, tipo y color) y presioná "Guardar prenda" para registrar tu primera pieza.'}
+              ? 'Toca "Registrar nueva prenda" arriba para armar tu vestidor en la nube.'
+              : 'Toca "Registrar nueva prenda" arriba, completa los datos (foto o ícono, tipo y color) y guarda tu primera pieza.'}
           </p>
 
           {isUserLoggedIn && onLoadSampleGarments && (

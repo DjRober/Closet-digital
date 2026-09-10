@@ -195,7 +195,7 @@ export function LookBuilder({ userId, garments = [] }: LookBuilderProps) {
             <Wand2 className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight font-['Outfit']">Armá tu look</h2>
+            <h2 className="text-xl font-bold text-white tracking-tight font-['Outfit']">Arma tu look</h2>
             <p className="text-xs text-stone-400">Sube las fotos de tus prendas y prueba cómo se ven juntas.</p>
           </div>
         </div>

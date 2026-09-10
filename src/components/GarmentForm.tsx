@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Check, Upload, Sparkles, Edit3, X } from 'lucide-react';
+import { Camera, Check, Upload, Sparkles, Edit3, X, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 import { Garment, GarmentIconKey } from '../types';
 import { GARMENT_TYPE_PRESETS, COLOR_PRESETS, ICON_OPTIONS } from '../data/garmentOptions';
 import { GarmentVisual } from './GarmentVisual';
@@ -27,11 +27,14 @@ export function GarmentForm({
   const [errors, setErrors] = useState<{ type?: string; color?: string }>({});
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('¡Prenda guardada!');
+  // Colapsado por defecto: el formulario no debe dominar si no se va a usar
+  const [expanded, setExpanded] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editingGarment) {
+      setExpanded(true);
       setGarmentType(editingGarment.type);
       setColorName(editingGarment.color);
       setColorHex(editingGarment.colorHex || '#1c1917');
@@ -55,6 +58,7 @@ export function GarmentForm({
     setIconKey('shirt');
     setVisualMode('icon');
     setErrors({});
+    setExpanded(false);
     onCancelEdit?.();
   };
 
@@ -171,6 +175,29 @@ export function GarmentForm({
   const inputNormal = 'border-white/15 focus:border-[#d9a6ff]/50 focus:ring-[#d9a6ff]/25';
   const inputError = 'border-rose-400/60 focus:ring-rose-400/25 bg-rose-500/10';
 
+  // Estado colapsado: tarjeta compacta que no domina la pantalla
+  if (!expanded) {
+    return (
+      <div id="registro-prenda-container" className="glass-panel p-4 sm:p-5">
+        <button
+          type="button"
+          id="btn-abrir-registro-prenda"
+          onClick={() => setExpanded(true)}
+          className="w-full flex items-center gap-4 text-left cursor-pointer group"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-[#d9a6ff] text-[#150f24] flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(217,166,255,0.4)] transition-transform group-hover:scale-105">
+            <Plus className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-base font-bold text-white font-['Outfit']">Registrar nueva prenda</div>
+            <div className="text-xs text-stone-400">Agrega una prenda a tu clóset cuando la necesites</div>
+          </div>
+          <ChevronDown className="w-5 h-5 text-stone-400 group-hover:text-white transition-colors shrink-0" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       id="registro-prenda-container"
@@ -227,6 +254,19 @@ export function GarmentForm({
               <Check className="w-3.5 h-3.5" />
               <span>{feedbackMessage}</span>
             </div>
+          )}
+
+          {!editingGarment && (
+            <button
+              type="button"
+              id="btn-contraer-registro-prenda"
+              onClick={() => setExpanded(false)}
+              title="Contraer"
+              aria-label="Contraer formulario"
+              className="glass-pill p-1.5 text-stone-300 hover:text-white cursor-pointer"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
           )}
         </div>
       </div>

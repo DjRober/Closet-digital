@@ -68,7 +68,7 @@ export function Header({
           {onTabChange && (
             <nav
               id="nav-secciones-header"
-              className="p-1 rounded-full bg-white/[0.06] border border-white/[0.12] backdrop-blur-md flex items-center gap-1 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]"
+              className="p-1 rounded-full bg-white/[0.06] border border-white/[0.12] backdrop-blur-md hidden sm:flex items-center gap-1 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]"
             >
               {/* Tab: Inicio (Landing) */}
               <button

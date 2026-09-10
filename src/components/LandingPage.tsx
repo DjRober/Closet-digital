@@ -443,14 +443,14 @@ export function LandingPage({
         </div>
       </section>
 
-      {/* ============ LOOK BUILDER VISUALIZER ("Armá tu look") ============ */}
+      {/* ============ LOOK BUILDER VISUALIZER ("Arma tu look") ============ */}
       <section className="relative px-4 sm:px-6 max-w-5xl mx-auto w-full">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-            Armá tu look
+            Arma tu look
           </h2>
           <p className="mt-3 text-sm sm:text-base text-stone-300/70">
-            Probá cómo se ven juntas tus prendas, con accesorios y detalles incluidos antes de vestirte.
+            Prueba cómo se ven juntas tus prendas, con accesorios y detalles incluidos antes de vestirte.
           </p>
         </div>
 
