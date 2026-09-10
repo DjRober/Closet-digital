@@ -144,16 +144,12 @@ export function ShaderBackground({
       // Reduced motion: un único frame estático, sin bucle de animación
       renderFrame();
     } else {
-      const targetInterval = 1000 / 30; // límite ~30fps
-      let last = 0;
-      const animate = (now: number) => {
+      // Render fluido a la tasa nativa del dispositivo…
+      const animate = () => {
         animationId = requestAnimationFrame(animate);
-        // No gastar GPU si no se ve o la pestaña está en segundo plano
+        // …pero sin gastar GPU si no se ve o la pestaña está en segundo plano
         if (!isOnScreen || !isPageVisible) return;
-        if (now - last < targetInterval) return;
-        last = now;
-        // x2 para compensar la mitad de frames respecto a 60fps
-        uniforms.time.value += 0.05 * effSpeed * 2;
+        uniforms.time.value += 0.05 * effSpeed;
         renderFrame();
       };
       animationId = requestAnimationFrame(animate);

@@ -23,7 +23,7 @@ import {
   saveOutfitToFirestore,
   deleteOutfitFromFirestore,
 } from './lib/firestoreService';
-import { Check, Cloud, Mail, AlertCircle, X, UserPlus, Lock } from 'lucide-react';
+import { Check, Cloud, Mail, AlertCircle, X, UserPlus, Lock, Plus } from 'lucide-react';
 
 const GUEST_STORAGE_KEY = 'armario_digital_guest_prendas';
 const GUEST_OUTFITS_STORAGE_KEY = 'armario_digital_guest_outfits';
@@ -61,6 +61,9 @@ export default function App() {
   // Auto Outfit Generator Modal state
   const [isAutoOutfitModalOpen, setIsAutoOutfitModalOpen] = useState(false);
 
+  // Garment form (add/edit) modal state
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   // Success toast message
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -70,14 +73,23 @@ export default function App() {
   // State for garment being edited
   const [editingGarment, setEditingGarment] = useState<Garment | null>(null);
 
-  const formSectionRef = useRef<HTMLDivElement>(null);
   const gallerySectionRef = useRef<HTMLDivElement>(null);
   const outfitsSectionRef = useRef<HTMLDivElement>(null);
+  const didAutoRoute = useRef(false);
 
   // Ensure the dark (fairy) theme class is present
   useEffect(() => {
     document.documentElement.classList.add('dark');
   }, []);
+
+  // Si la persona ya tiene sesión, la llevamos directo a su armario (una sola vez)
+  useEffect(() => {
+    if (authLoading || didAutoRoute.current) return;
+    if (user) {
+      didAutoRoute.current = true;
+      setActiveTab('armario');
+    }
+  }, [user, authLoading]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -365,9 +377,17 @@ export default function App() {
 
   const handleSelectGarment = (garment: Garment) => {
     setEditingGarment(garment);
-    if (formSectionRef.current) {
-      formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setIsFormOpen(true);
+  };
+
+  const handleOpenAddForm = () => {
+    setEditingGarment(null);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingGarment(null);
   };
 
   const handleCancelEdit = () => {
@@ -700,11 +720,11 @@ export default function App() {
           userName={user?.displayName}
         />
       ) : activeTab === 'look' ? (
-        <main className="relative z-10 flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8">
+        <main key="view-look" className="animate-fade relative z-10 flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8">
           <LookBuilder userId={user?.uid} garments={garments} />
         </main>
       ) : (
-        <main className="relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8 space-y-12">
+        <main key="view-wardrobe" className="animate-fade relative z-10 flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-8 pb-28 sm:py-8 space-y-12">
           {currentScreen === 'outfit-creator' ? (
             /* Pantalla: Ver prendas juntas y guardar outfit */
             <OutfitCreatorScreen
@@ -719,17 +739,7 @@ export default function App() {
               {/* Sugerencia por clima de hoy */}
               <WeatherBar garments={garments} onGenerateOutfit={() => setIsAutoOutfitModalOpen(true)} />
 
-              {/* Formulario de registro y edición */}
-              <div ref={formSectionRef} className="scroll-mt-6">
-                <GarmentForm
-                  onAddGarment={handleAddGarment}
-                  editingGarment={editingGarment}
-                  onUpdateGarment={handleUpdateGarment}
-                  onCancelEdit={handleCancelEdit}
-                />
-              </div>
-
-              {/* Galería de prendas en el armario */}
+              {/* Galería de prendas en el armario (protagonista) */}
               <div ref={gallerySectionRef} className="scroll-mt-6">
                 <GarmentGallery
                   garments={garments}
@@ -743,6 +753,7 @@ export default function App() {
                   onClearSelection={handleClearSelection}
                   onCreateOutfitClick={handleOpenOutfitCreator}
                   onGenerateAutoOutfitClick={() => setIsAutoOutfitModalOpen(true)}
+                  onAddGarmentClick={handleOpenAddForm}
                   onDeleteRequest={handleRequestDelete}
                   onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
                   onToggleFavorite={handleToggleFavorite}
@@ -775,6 +786,29 @@ export default function App() {
         </main>
       )}
 
+      {/* Garment Form Modal (add / edit) */}
+      {isFormOpen && (
+        <div
+          id="modal-form-prenda"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseForm();
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-2xl my-auto">
+            <GarmentForm
+              onAddGarment={handleAddGarment}
+              editingGarment={editingGarment}
+              onUpdateGarment={handleUpdateGarment}
+              onCancelEdit={handleCancelEdit}
+              onClose={handleCloseForm}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Auth Modal for Email/Password Registration & Login */}
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -799,11 +833,22 @@ export default function App() {
         onNavigateToAddGarment={() => {
           setActiveTab('armario');
           setCurrentScreen('wardrobe');
-          setTimeout(() => {
-            formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 120);
+          handleOpenAddForm();
         }}
       />
+
+      {/* Botón flotante para agregar prenda (móvil, pantalla de armario) */}
+      {activeTab === 'armario' && currentScreen === 'wardrobe' && selectedGarmentIds.length === 0 && (
+        <button
+          type="button"
+          id="fab-agregar-prenda"
+          onClick={handleOpenAddForm}
+          aria-label="Agregar prenda"
+          className="sm:hidden fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-[#d9a6ff] text-[#150f24] flex items-center justify-center shadow-[0_8px_30px_rgba(217,166,255,0.55)] active:scale-95 transition-transform"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
 
       {/* Navegación inferior en móvil */}
       {activeTab !== 'landing' && <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}

@@ -3,7 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
 import { getGarmentRole, GarmentRole } from '../lib/outfitGenerator';
-import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2, Heart } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2, Heart, Plus } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
@@ -17,6 +17,7 @@ interface GarmentGalleryProps {
   onClearSelection: () => void;
   onCreateOutfitClick: () => void;
   onGenerateAutoOutfitClick?: () => void;
+  onAddGarmentClick?: () => void;
   onDeleteRequest: (garment: Garment) => void;
   onLoadSampleGarments?: () => void;
   onToggleFavorite?: (garment: Garment) => void;
@@ -47,6 +48,7 @@ export function GarmentGallery({
   onClearSelection,
   onCreateOutfitClick,
   onGenerateAutoOutfitClick,
+  onAddGarmentClick,
   onDeleteRequest,
   onLoadSampleGarments,
   onToggleFavorite,
@@ -94,6 +96,19 @@ export function GarmentGallery({
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/[0.08] text-stone-300 border border-white/12 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
             {garments.length} {garments.length === 1 ? 'prenda' : 'prendas'}
           </span>
+
+          {/* Agregar prenda (acción principal, visible en escritorio) */}
+          {onAddGarmentClick && (
+            <button
+              type="button"
+              id="btn-agregar-prenda"
+              onClick={onAddGarmentClick}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_15px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Agregar prenda</span>
+            </button>
+          )}
 
           {/* Quick Generate Auto Outfit Button */}
           {onGenerateAutoOutfitClick && (
@@ -229,12 +244,23 @@ export function GarmentGallery({
           </h3>
           <p className="text-xs text-stone-400 mt-1.5 max-w-md mx-auto leading-relaxed">
             {isUserLoggedIn
-              ? 'Toca "Registrar nueva prenda" arriba para armar tu vestidor en la nube.'
-              : 'Toca "Registrar nueva prenda" arriba, completa los datos (foto o ícono, tipo y color) y guarda tu primera pieza.'}
+              ? 'Agrega tu primera prenda para armar tu vestidor en la nube.'
+              : 'Registra tu primera prenda (foto o ícono, tipo y color) para empezar tu clóset.'}
           </p>
 
-          {isUserLoggedIn && onLoadSampleGarments && (
-            <div className="mt-5">
+          <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+            {onAddGarmentClick && (
+              <button
+                type="button"
+                id="btn-agregar-prenda-vacio"
+                onClick={onAddGarmentClick}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Agregar prenda</span>
+              </button>
+            )}
+            {isUserLoggedIn && onLoadSampleGarments && (
               <button
                 type="button"
                 id="btn-cargar-prendas-muestra"
@@ -242,10 +268,10 @@ export function GarmentGallery({
                 className="glass-pill inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-white hover:text-[#d9a6ff] cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-[#d9a6ff]" />
-                <span>Cargar 3 prendas de ejemplo para probar</span>
+                <span>Cargar 3 prendas de ejemplo</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : visibleGarments.length === 0 ? (
         <div className="glass-panel p-10 text-center border-dashed border-white/20">
