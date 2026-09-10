@@ -7,6 +7,7 @@ import { OutfitCreatorScreen } from './components/OutfitCreatorScreen';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { AuthModal } from './components/AuthModal';
 import { LandingPage } from './components/LandingPage';
+import { AutoOutfitModal } from './components/AutoOutfitModal';
 import { Garment, Outfit } from './types';
 import { INITIAL_GARMENTS } from './data/garmentOptions';
 import { useAuth } from './context/AuthContext';
@@ -65,6 +66,9 @@ export default function App() {
   // Auth modal state
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<'signin' | 'signup'>('signup');
+
+  // Auto Outfit Generator Modal state
+  const [isAutoOutfitModalOpen, setIsAutoOutfitModalOpen] = useState(false);
 
   // Success toast message
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -710,6 +714,7 @@ export default function App() {
                   onToggleSelectGarment={handleToggleSelectGarment}
                   onClearSelection={handleClearSelection}
                   onCreateOutfitClick={handleOpenOutfitCreator}
+                  onGenerateAutoOutfitClick={() => setIsAutoOutfitModalOpen(true)}
                   onDeleteRequest={handleRequestDelete}
                   onLoadSampleGarments={user ? handleLoadSampleGarmentsForUser : undefined}
                 />
@@ -727,6 +732,7 @@ export default function App() {
                     }
                     showToast('Selecciona las prendas en tu armario para combinarlas');
                   }}
+                  onGenerateAutoOutfitClick={() => setIsAutoOutfitModalOpen(true)}
                 />
               </div>
             </>
@@ -747,6 +753,21 @@ export default function App() {
         garment={garmentToDelete}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      {/* Auto Outfit Generator Modal based on Logical Rules */}
+      <AutoOutfitModal
+        isOpen={isAutoOutfitModalOpen}
+        onClose={() => setIsAutoOutfitModalOpen(false)}
+        garments={garments}
+        onSaveOutfit={handleSaveOutfit}
+        onNavigateToAddGarment={() => {
+          setActiveTab('armario');
+          setCurrentScreen('wardrobe');
+          setTimeout(() => {
+            formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 120);
+        }}
       />
 
       {/* Minimal Footer */}

@@ -38,19 +38,13 @@ export function Header({
           onClick={() => onTabChange && onTabChange('landing')}
           className="flex items-center space-x-3 text-left group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/25 to-[#ff8fd8]/15 border border-[#d9a6ff]/40 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)] transition-transform group-hover:scale-105">
-            {/* Minimalist hanger mark */}
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#d9a6ff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-5 h-5 drop-shadow-[0_0_8px_rgba(217,166,255,0.6)]"
-            >
-              <path d="M12 4a2 2 0 0 1 2 2c0 1.5-1.5 2-2 3l-8 6a1 1 0 0 0 .6 1.7h18.8a1 1 0 0 0 .6-1.7L14 9" />
-            </svg>
+          <div className="w-10 h-10 rounded-2xl bg-white/95 border border-white/30 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)] transition-transform group-hover:scale-105 p-1 overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="Armario Digital Logo"
+              className="w-full h-full object-contain"
+              referrerPolicy="no-referrer"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -119,18 +119,13 @@ export function LandingPage({
         {/* Minimal Hero Top Bar (Without the global app header) */}
         <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/25 to-[#ff8fd8]/15 border border-[#d9a6ff]/40 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.3)]">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#d9a6ff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5 drop-shadow-[0_0_8px_rgba(217,166,255,0.6)]"
-              >
-                <path d="M12 4a2 2 0 0 1 2 2c0 1.5-1.5 2-2 3l-8 6a1 1 0 0 0 .6 1.7h18.8a1 1 0 0 0 .6-1.7L14 9" />
-              </svg>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d9a6ff]/20 to-[#ff8fd8]/10 border border-[#d9a6ff]/35 flex items-center justify-center shadow-[0_0_16px_rgba(217,166,255,0.25)] p-0.5 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Armario Digital Logo"
+                className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(217,166,255,0.5)]"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <span className="text-lg sm:text-xl font-bold tracking-tight text-white font-['Outfit']">
               Armario Digital
@@ -187,7 +182,7 @@ export function LandingPage({
         </header>
 
         {/* Hero Center Text and CTAs */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16 text-center flex flex-col items-center my-auto">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-14 text-center flex flex-col items-center my-auto">
           {/* Eyebrow badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-[0_1px_0_0_rgba(255,255,255,0.2)_inset] text-xs font-semibold tracking-wider text-[#d9a6ff] uppercase mb-6 animate-fade-in">
             <Sparkles className="w-3.5 h-3.5" />

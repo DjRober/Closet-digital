@@ -150,9 +150,14 @@ export function AuthModal({ isOpen, initialMode = 'signup', onClose }: AuthModal
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-stone-900 text-stone-100 dark:bg-stone-800 dark:border dark:border-stone-700 flex items-center justify-center shadow-xs">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-white/95 border border-stone-200 dark:border-white/20 flex items-center justify-center p-1 shadow-xs shrink-0 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Armario Digital"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <h2 id="auth-modal-title" className="text-lg font-semibold tracking-tight">

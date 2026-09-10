@@ -1,17 +1,19 @@
 import { Outfit } from '../types';
 import { OutfitCard } from './OutfitCard';
-import { Sparkles, Plus, Shirt } from 'lucide-react';
+import { Sparkles, Plus, Shirt, Wand2 } from 'lucide-react';
 
 interface OutfitsSectionProps {
   outfits: Outfit[];
   onDeleteOutfit: (outfitId: string) => void;
   onCreateOutfitClick: () => void;
+  onGenerateAutoOutfitClick: () => void;
 }
 
 export function OutfitsSection({
   outfits,
   onDeleteOutfit,
   onCreateOutfitClick,
+  onGenerateAutoOutfitClick,
 }: OutfitsSectionProps) {
   return (
     <section id="mis-outfits" className="mt-12 scroll-mt-20">
@@ -31,19 +33,30 @@ export function OutfitsSection({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/[0.08] text-stone-300 border border-white/12 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
             {outfits.length} {outfits.length === 1 ? 'outfit' : 'outfits'}
           </span>
+
+          {/* Botón principal: Generar outfit automático */}
+          <button
+            type="button"
+            id="btn-generar-outfit-auto"
+            onClick={onGenerateAutoOutfitClick}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#d9a6ff] to-[#ff8fd8] hover:from-[#eccbff] hover:to-[#ffa6e2] text-[#150f24] text-xs font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span>Generar outfit</span>
+          </button>
 
           <button
             type="button"
             id="btn-nuevo-outfit-seccion"
             onClick={onCreateOutfitClick}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            className="glass-pill inline-flex items-center gap-1.5 px-3.5 py-2 text-stone-200 text-xs font-semibold cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>Crear outfit</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>Crear manual</span>
           </button>
         </div>
       </div>
@@ -61,17 +74,27 @@ export function OutfitsSection({
             Aún no has guardado ningún outfit
           </h3>
           <p className="text-xs text-stone-400 mt-1.5 max-w-sm mx-auto leading-relaxed">
-            Selecciona varias prendas de tu armario y combínalas para guardar tu primer conjunto de vestuario.
+            Genera automáticamente combinaciones con las prendas de tu armario basadas en reglas de estilo o selecciona tus prendas manualmente.
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              id="btn-generar-primer-outfit-auto"
+              onClick={onGenerateAutoOutfitClick}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#d9a6ff] to-[#ff8fd8] hover:from-[#eccbff] hover:to-[#ffa6e2] text-[#150f24] text-xs font-bold shadow-[0_0_25px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Wand2 className="w-4 h-4" />
+              <span>Generar outfit automático</span>
+            </button>
+
             <button
               type="button"
               id="btn-empezar-combinar"
               onClick={onCreateOutfitClick}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#d9a6ff] hover:bg-[#eccbff] text-[#150f24] text-xs font-bold shadow-[0_0_20px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+              className="glass-pill inline-flex items-center gap-2 px-4 py-2.5 text-stone-200 text-xs font-semibold cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Seleccionar prendas para combinar</span>
+              <Plus className="w-4 h-4" />
+              <span>Creación manual</span>
             </button>
           </div>
         </div>

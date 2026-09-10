@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'motion/react';
 import { Garment } from '../types';
 import { GarmentCard } from './GarmentCard';
-import { Sparkles, Layers, CheckSquare, X, ArrowRight } from 'lucide-react';
+import { Sparkles, Layers, CheckSquare, X, ArrowRight, Wand2 } from 'lucide-react';
 
 interface GarmentGalleryProps {
   garments: Garment[];
@@ -14,6 +14,7 @@ interface GarmentGalleryProps {
   onToggleSelectGarment: (garment: Garment) => void;
   onClearSelection: () => void;
   onCreateOutfitClick: () => void;
+  onGenerateAutoOutfitClick?: () => void;
   onDeleteRequest: (garment: Garment) => void;
   onLoadSampleGarments?: () => void;
 }
@@ -29,6 +30,7 @@ export function GarmentGallery({
   onToggleSelectGarment,
   onClearSelection,
   onCreateOutfitClick,
+  onGenerateAutoOutfitClick,
   onDeleteRequest,
   onLoadSampleGarments,
 }: GarmentGalleryProps) {
@@ -60,6 +62,19 @@ export function GarmentGallery({
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/[0.08] text-stone-300 border border-white/12 shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset]">
             {garments.length} {garments.length === 1 ? 'prenda' : 'prendas'}
           </span>
+
+          {/* Quick Generate Auto Outfit Button */}
+          {onGenerateAutoOutfitClick && (
+            <button
+              type="button"
+              id="btn-galeria-generar-auto-outfit"
+              onClick={onGenerateAutoOutfitClick}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#d9a6ff] to-[#ff8fd8] hover:from-[#eccbff] hover:to-[#ffa6e2] text-[#150f24] text-xs font-bold shadow-[0_0_15px_rgba(217,166,255,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              <span>Generar outfit</span>
+            </button>
+          )}
 
           {/* Toggle Selection / Combinar mode button */}
           <button
